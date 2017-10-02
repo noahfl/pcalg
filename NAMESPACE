@@ -1,4 +1,4 @@
-useDynLib(images_test, .registration = TRUE)
+useDynLib(imagestest, .registration = TRUE)
 
 ###----- Imports ------------------------------------------------------
 
