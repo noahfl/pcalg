@@ -190,6 +190,10 @@ RcppExport SEXP globalMLE(
  * @param	argScore			name of score object to be used. Currently supported:
  * 								"none" (= R object), "gauss.l0pen"
  * @param	argOptions			list of options specific for desired inference algorithm
+ * 
+ * @export
+ * 
+ * [[Rcpp::export]]
  */
 RcppExport SEXP causalInference(
 		SEXP argGraph,

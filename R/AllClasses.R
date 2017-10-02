@@ -1088,7 +1088,7 @@ setRefClass("EssGraph",
               forward = "GIES-F",
               backward = "GIES-B",
               turning = "GIES-T")
-
+          print("calling GES")
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,

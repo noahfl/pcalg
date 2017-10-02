@@ -1,4 +1,4 @@
-useDynLib(pcalg)
+useDynLib(images_test, .registration = TRUE)
 
 ###----- Imports ------------------------------------------------------
 
