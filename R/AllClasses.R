@@ -580,7 +580,7 @@ setRefClass("Score",
                     function(i) local.score(i, edges[[i]], ...)))
           } else {
             ## Calculate score with the C++ library
-            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "pcalg")
+            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "imagestest")
           }
         },
 
@@ -612,7 +612,7 @@ setRefClass("Score",
           } else {
             ## Calculate score with the C++ library
             .Call("globalMLE", c.fcn, pp.dat, dag$.in.edges, c.fcn.options(...),
-                PACKAGE = "pcalg")
+                PACKAGE = "imagestest")
           }
         }
     )
@@ -671,6 +671,10 @@ setRefClass("DataScore",
           pp.dat$target.index <<- targetList$target.index[perm]
           pp.dat$data <<- data[perm, ]
           pp.dat$vertex.count <<- ncol(data)
+          
+          
+          #imscore test
+          im.score <- NULL
 
 
           ## Store list of index vectors of "non-interventions": for each vertex k,
@@ -695,6 +699,8 @@ setRefClass("DataScore",
         }
     )
 )
+
+
 
 #' l0-penalized log-likelihood for Gaussian models, with freely
 #' choosable penalty lambda.
@@ -725,6 +731,7 @@ setRefClass("GaussL0penIntScore",
     methods = list(
         #' Constructor
         initialize = function(data = matrix(1, 1, 1),
+            #imscore =                 
             targets = list(integer(0)),
             target.index = rep(as.integer(1), nrow(data)),
             nodes = colnames(data),
@@ -742,6 +749,9 @@ setRefClass("GaussL0penIntScore",
 
           ## Number of variables
           p <- ncol(data)
+          
+          #imscore test
+          #im.score <- NULL
 
           ## l0-penalty is decomposable
           decomp <<- TRUE
@@ -855,7 +865,7 @@ setRefClass("GaussL0penIntScore",
             return(-0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents)))
           } else {
             ## Calculate score with the C++ library
-            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "pcalg"))
+            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
           } # IF c.fcn
         },
 
@@ -917,7 +927,7 @@ setRefClass("GaussL0penIntScore",
             }
           } else {
             ## Calculate score with the C++ library
-            return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "pcalg"))
+            return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
           } # IF c.fcn
         }
         )
@@ -1095,7 +1105,7 @@ setRefClass("EssGraph",
               alg.name,
               score$c.fcn,
               causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, ...),
-              PACKAGE = "pcalg")
+              PACKAGE = "imagestest")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
 
@@ -1123,7 +1133,7 @@ setRefClass("EssGraph",
               alg.name,
               score$c.fcn,
               causal.inf.options(caching = FALSE),
-              PACKAGE = "pcalg")
+              PACKAGE = "imagestest")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
 
@@ -1141,14 +1151,16 @@ setRefClass("EssGraph",
                 "GDS", "SiMy"), ...) {
           stopifnot(!is.null(score <- getScore()))
           algorithm <- match.arg(algorithm)
-
+          
+          print("entering")
+          
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,
               algorithm,
               score$c.fcn,
               causal.inf.options(...),
-              PACKAGE = "pcalg")
+              PACKAGE = "imagestest")
 
           if (identical(new.graph, "interrupt"))
             return(FALSE)
@@ -1164,7 +1176,7 @@ setRefClass("EssGraph",
           stopifnot(!is.null(score <- getScore()))
 
           result <- score$create.dag()
-          result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "pcalg")
+          result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "imagestest")
           result$.params <- score$global.fit(result)
 
           return(result)
@@ -1175,7 +1187,7 @@ setRefClass("EssGraph",
         #' @param   max.size    maximum target size; allowed values: 1, p (= # nodes)
         ## TODO document that function... or better: provide a documented wrapper function
         opt.target = function(max.size) {
-          .Call("optimalTarget", .in.edges, max.size, PACKAGE = "pcalg")
+          .Call("optimalTarget", .in.edges, max.size, PACKAGE = "imagestest")
         }
         ))
 
