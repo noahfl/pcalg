@@ -105,6 +105,29 @@ RcppExport SEXP globalScore(
 }
 
 /**
+ * Yields the imScore of a list of DAGs
+ *
+ * @param	argScore		name of the score
+ * @param	argPreprocData	preprocessed data; sufficient statistic and all
+ * 							parameters characterizing the score to be calculated
+ * @param 	argInEdges		list of in-edges characterizing the DAG
+ * @param	argOptions		additional options; at the moment: DEBUG.LEVEL
+ * @return	global score value
+ */
+
+RcppExport SEXP imScore(SEXP argGlobalArgs) {
+  
+  //TODO: figure out how to do lists within list
+  Rcpp::List scores(Rcpp::List argGlobalArgs);
+  std::list <int> globals;
+  
+  for (int i = 0; i < scores.size(); i++) {
+    globals.push_back(globalScore(argGlobalArgs[0], argGlobalArgs[1], argGlobalArgs[2], argGlobalArgs[3]));
+  }
+  
+}
+
+/**
  * Yields the local MLE of a vertex given its parents.
  *
  * @param	argScore		name of the score
