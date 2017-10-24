@@ -1,4 +1,4 @@
-setRefClass("IMaGES",
+IMaGES <- setRefClass("IMaGES",
   fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list"),
   
   # validity <- function(object) {
@@ -8,25 +8,8 @@ setRefClass("IMaGES",
   
   #TODO: figure out why this isn't being called
   methods = list(
-    initialize = function(matrices, penalty, ...) {
-      
-      message("initializing")
-      .rawscores <<- list()
-      for (i in 1:length(matrices)) {
-        message("adding score")
-        .rawscores[[i]] <<- new("GaussL0penObsScore", matrices[[i]])
-      }
-      
-      .graphs <<- list()
-      
-      for (i in 1:length(.rawscores)) {
-        message("creating graph")
-        .graphs[[i]] <<- create.graph(.rawscores[[i]])
-      }
-      
-    },
-    
-    create.graph <- function(
+    #' Constructor
+    create.graph = function(
       score, 
       labels = score$getNodes(), 
       targets = score$getTargets(),
@@ -127,6 +110,8 @@ setRefClass("IMaGES",
         stop("'targets' must be a list of integer vectors.")
       }
       
+      
+      print("You made it this far")
       imgraph <- new("IMGraph", nodes = labels, targets = targets, score = score)
       return(imgraph)
       # if (essgraph$caus.inf(algorithm, ...)) {
@@ -141,9 +126,60 @@ setRefClass("IMaGES",
       #          repr = essgraph$repr())
       #   }
       # } else stop("invalid 'algorithm' or \"EssGraph\" object")
+    },
+    
+    
+    #TODO: fix and figure out k (lambda?)
+    IMScore <- function(graphs, penalty) {
+      
+      
+      
+      #print(typeof(length(scores)))
+      m <- length(graphs)
+      #print(m)
+      #print(dim(matrices[[1]]))
+      #n <- dim(matrices[[1]])[[2]]
+      #print(typeof(n))
+      #print(n)
+      sum <- 0
+      k <- graphs[[1]]$
+      
+      for (i in 1:length(scores)) {
+        #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
+        sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag())
+      }
+      
+      #print(sum)
+      imscore = ((-2/m) *  sum )+ ((penalty * k) * log(n))
+      print(imscore)
+      return(imscore)
     }
   )
-)  
+)
+
+IMaGES$methods(
+  initialize = function(matrices = NULL, penalty = 1.5, ...) {
+    
+    print("initializing")
+    rawscores <- list()
+    for (i in 1:length(matrices)) {
+      print("adding score")
+      rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
+    }
+    .penalty <<- penalty
+    .rawscores <<- rawscores
+    
+    graphs <- list()
+    
+    for (i in 1:length(.rawscores)) {
+      print("creating graph")
+      graphs[[i]] <- create.graph(rawscores[[i]])
+    }
+    
+    .graphs <<- graphs
+    
+  }
+)
 
 #' Interventional essential graph for IMaGES
 setRefClass("IMGraph",

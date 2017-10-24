@@ -115,17 +115,17 @@ RcppExport SEXP globalScore(
  * @return	global score value
  */
 
-RcppExport SEXP imScore(SEXP argGlobalArgs) {
-  
-  //TODO: figure out how to do lists within list
-  Rcpp::List scores(Rcpp::List argGlobalArgs);
-  std::list <int> globals;
-  
-  for (int i = 0; i < scores.size(); i++) {
-    globals.push_back(globalScore(argGlobalArgs[0], argGlobalArgs[1], argGlobalArgs[2], argGlobalArgs[3]));
-  }
-  
-}
+// RcppExport SEXP imScore(SEXP argGlobalArgs) {
+//   
+//   //TODO: figure out how to do lists within list
+//   Rcpp::List scores(Rcpp::List argGlobalArgs);
+//   std::list <int> globals;
+//   
+//   for (int i = 0; i < scores.size(); i++) {
+//     globals.push_back(globalScore(argGlobalArgs[0], argGlobalArgs[1], argGlobalArgs[2], argGlobalArgs[3]));
+//   }
+//   
+// }
 
 /**
  * Yields the local MLE of a vertex given its parents.
@@ -248,6 +248,7 @@ RcppExport SEXP causalInference(
 	std::string algName = Rcpp::as<std::string>(argAlgorithm);
 
 	// Cast score
+	//TODO: edit from here
 	dout.level(2) << "  Casting score...\n";
 	Score* score = createScore(Rcpp::as<std::string>(argScore), &targets, data);
 

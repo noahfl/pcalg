@@ -41,7 +41,7 @@ for (i in 1:length(matrices)) {
 
 images = new("IMaGES", matrices = matrices, penalty=1.5)
 
-print(images.graphs[[1]])
+print(images$.graphs[[1]])
 
 #res <- IMaGES(matrices,scores)
 

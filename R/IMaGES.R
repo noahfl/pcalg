@@ -11,7 +11,7 @@ IMScore <- function(matrices, scores, penalty) {
   #print(typeof(n))
   #print(n)
   sum <- 0
-  #k <- 5
+  k <- 5 #filler value
   
   for (i in 1:length(scores)) {
     #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
@@ -19,7 +19,7 @@ IMScore <- function(matrices, scores, penalty) {
   }
   
   #print(sum)
-  imscore = (-2/m) *  sum
+  imscore = ((-2/m) *  sum )+ ((penalty * k) * log(n))
   print(imscore)
   return(imscore)
 }
