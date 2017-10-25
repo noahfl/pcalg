@@ -628,7 +628,7 @@ setRefClass("DataScore",
         return("Data from all intervention targets must be available")
       }
 
-      ## Check if dimensions of target.index and data conincide
+      ## Check if dimensions of target.index and data conincideR
       if (length(object$pp.dat$target.index) != nrow(object$pp.dat$data))
         return("Length of target index vector does not coincide with sample size.")
 

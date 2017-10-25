@@ -128,6 +128,50 @@ IMaGES <- setRefClass("IMaGES",
       # } else stop("invalid 'algorithm' or \"EssGraph\" object")
     },
     
+    run_phase = function(phase=c("forward")) {
+      
+      alg.name <- ""
+      
+      phase <- match.arg(phase)
+      
+      if (phase[[1]] == "forawrd") {
+        alg.name <- "GIES-F"
+      }
+      else if (phase[[1]] == "backward") {
+        alg.name <- "GIES-B"
+      }
+      else if (phase[[1]] == "turning") {
+        alg.name <- "GIES-T"
+      }
+      else {
+        stop("incorrect algorithm name")
+      }
+      
+      
+      for (i in 1:length(.graphs)) {
+        if (!.graphs[[i]]$greedy.step(alg.name=alg.name, direction = phase, verbose = FALSE)) {
+          stop("something happened")
+        }
+        else {
+          print(.graphs[[i]])
+        }
+      }
+      
+    },
+    
+    run = function() {
+      
+      phases = c("forward", "backward", "turning")
+      
+      for (i in 1:length(phases)) {
+        for (i in 1:length(.graphs)) {
+          run_phase(c(phases[[i]]))
+          print("phase")
+        }
+      }
+    
+    },
+    
     
     #TODO: fix and figure out k (lambda?)
     IMScore <- function(graphs, penalty) {
@@ -142,7 +186,7 @@ IMaGES <- setRefClass("IMaGES",
       #print(typeof(n))
       #print(n)
       sum <- 0
-      k <- graphs[[1]]$
+      k <- 5#graphs[[1]]$
       
       for (i in 1:length(scores)) {
         #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
@@ -177,6 +221,8 @@ IMaGES$methods(
     }
     
     .graphs <<- graphs
+    
+    run()
     
   }
 )
@@ -271,7 +317,7 @@ setRefClass("IMGraph",
               #' internal function
               causal.inf.options = function(
                 caching = TRUE,
-                phase = c("forward", "backward", "turning"),
+                phase = c("forward"),
                 iterate = length(phase) > 1,
                 maxDegree = integer(0),
                 maxSteps = 0,
@@ -312,22 +358,24 @@ setRefClass("IMGraph",
               },
               
               #' Performs one greedy step
-              greedy.step = function(direction = c("forward", "backward", "turning"), verbose = FALSE, ...) {
+              greedy.step = function(alg.name="GIES-F", direction = c("forward"), verbose = FALSE, ...) {
                 stopifnot(!is.null(score <- getScore()))
                 
+                print("Did we get here?")
                 ## Cast direction
                 direction <- match.arg(direction)
-                alg.name <- switch(direction,
-                                   forward = "GIES-F",
-                                   backward = "GIES-B",
-                                   turning = "GIES-T")
+                #alg.name <- switch(direction,
+                #                   forward = "GIES-F",
+                #                   backward = "GIES-B",
+                #                   turning = "GIES-T")
+                alg.name <- match.arg(alg.name)
                 print("calling GES")
                 new.graph <- .Call("causalInference",
                                    .in.edges,
                                    score$pp.dat,
                                    alg.name,
                                    score$c.fcn,
-                                   causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, ...),
+                                   causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, phase=direction, ...),
                                    PACKAGE = "imagestest")
                 if (identical(new.graph, "interrupt"))
                   return(FALSE)
@@ -339,6 +387,8 @@ setRefClass("IMGraph",
                 
                 return(new.graph$steps == 1)
               },
+              
+              
               
               #' greedy.search = function(direction = c("forward", "backward", "turning")) {
               #'   stopifnot(!is.null(score <- getScore()))
