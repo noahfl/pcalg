@@ -29,19 +29,19 @@ tst <- new("GaussL0penObsScore", matrices[[1]])
 
 #print(tst$global.score(tst$create.dag()))
 
-scores = list()
-
-for (i in 1:length(matrices)) {
-  scr <- new("GaussL0penObsScore", matrices[[i]])
-  #scores[[i]] <- ges(scr)
-  scores[[i]] <- scr
-}
+# scores = list()
+# 
+# for (i in 1:length(matrices)) {
+#   scr <- new("GaussL0penObsScore", matrices[[i]])
+#   #scores[[i]] <- ges(scr)
+#   scores[[i]] <- scr
+# }
 
 #tst <- ges(scores[[1]])
 
 images = new("IMaGES", matrices = matrices, penalty=1.5)
 
-print(images$.graphs[[1]])
+#print(images$.graphs[[1]])
 
 #res <- IMaGES(matrices,scores)
 

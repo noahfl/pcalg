@@ -202,10 +202,10 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, penalty = 1.5, ...) {
-    
+  initialize = function(matrices = NULL, penalty = 1.5) {
+    images = NULL
     print("initializing")
-    rawscores <- list()
+    rawscores = list()
     for (i in 1:length(matrices)) {
       print("adding score")
       rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
@@ -463,3 +463,5 @@ setRefClass("IMGraph",
                 .Call("optimalTarget", .in.edges, max.size, PACKAGE = "imagestest")
               }
             ))
+
+

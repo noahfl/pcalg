@@ -515,9 +515,11 @@ setRefClass("Score",
         initialize = function(
             targets = list(integer(0)),
             nodes = character(0),
+            .imscore = NULL,
             ...) {
           .nodes <<- nodes
           pp.dat$targets <<- .tidyTargets(length(nodes), targets)
+          .imscore <<- imscore
         },
 
         #' Yields a vector of node names
@@ -573,20 +575,26 @@ setRefClass("Score",
 
         #' Calculates the global score of a DAG which is only specified
         #' by its list of in-edges
-        global.score.int = function(edges, ...) {
-          if (c.fcn == "none") {
+        global.score.int = function(edges, .imscore, ...) {
+          if (!is.null(.imscore)) {
+            print("at .imscore")
+            return(as.double(.imscore))
+          }
+          else {
+#          else if (c.fcn == "none") {
             ## Calculate score in R
             sum(sapply(1:pp.dat$vertex.count,
                     function(i) local.score(i, edges[[i]], ...)))
-          } else {
-            ## Calculate score with the C++ library
-            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "imagestest")
           }
+#          } else {
+#            ## Calculate score with the C++ library
+#            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "imagestest")
+#          }
         },
 
         #' Calculates the global score of a DAG
-        global.score = function(dag, ...) {
-          global.score.int(dag$.in.edges, ...)
+        global.score = function(dag, .imscore=NULL, ...) {
+          global.score.int(dag$.in.edges, .imscore, ...)
         },
 
         #' Calculates a local model fit for a vertex and its parents
@@ -650,6 +658,7 @@ setRefClass("DataScore",
             targets = list(integer(0)),
             target.index = rep(as.integer(1), nrow(data)),
             nodes = colnames(data),
+            .images = NULL,
             ...) {
           ## Node names (stored in constructor of "Score"):
           ## if data has no column names, correct them
@@ -673,8 +682,8 @@ setRefClass("DataScore",
           pp.dat$vertex.count <<- ncol(data)
           
           
-          #imscore test
-          im.score <- NULL
+          #.imscore test
+          #im.score <- NULL
 
 
           ## Store list of index vectors of "non-interventions": for each vertex k,
@@ -690,10 +699,10 @@ setRefClass("DataScore",
 
           ## No C++ scoring object by default
           c.fcn <<- "none"
-
+          .images <<- .images
           ## R function objects
           pp.dat$local.score <<- function(vertex, parents) local.score(vertex, parents)
-          pp.dat$global.score <<- function(edges) global.score(vertex, parents)
+          pp.dat$global.score <<- function(edges) global.score(vertex, parents, .images)
           pp.dat$local.fit <<- function(vertex, parents) local.fit(vertex, parents)
           pp.dat$global.fit <<- function(edges) global.fit(vertex, parents)
         }
@@ -731,7 +740,7 @@ setRefClass("GaussL0penIntScore",
     methods = list(
         #' Constructor
         initialize = function(data = matrix(1, 1, 1),
-            #imscore =                 
+            #.imscore =                 
             targets = list(integer(0)),
             target.index = rep(as.integer(1), nrow(data)),
             nodes = colnames(data),
@@ -739,18 +748,19 @@ setRefClass("GaussL0penIntScore",
             intercept = TRUE,
             format = c("raw", "scatter"),
             use.cpp = TRUE,
+            .images = NULL,
             ...) {
           ## Store supplied data in sorted form. Make sure data is a matrix for
           ## linear-Gaussian data
           if (!is.matrix(data)) {
             data <- as.matrix(data)
           }
-          callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, ...)
+          callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, images = .images, ...)
 
           ## Number of variables
           p <- ncol(data)
           
-          #imscore test
+          #.imscore test
           #im.score <- NULL
 
           ## l0-penalty is decomposable
@@ -944,6 +954,7 @@ setRefClass("GaussL0penObsScore", contains = "GaussL0penIntScore",
             intercept = FALSE,
             format = c("raw", "scatter"),
             use.cpp = TRUE,
+            .images = NULL,
             ...) {
           callSuper(data = data,
               targets = list(integer(0)),
@@ -953,6 +964,7 @@ setRefClass("GaussL0penObsScore", contains = "GaussL0penIntScore",
               intercept = intercept,
               format = format,
               use.cpp = use.cpp,
+              .images = .images,
               ...)
           }
         )
