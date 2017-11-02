@@ -658,7 +658,7 @@ setRefClass("DataScore",
             targets = list(integer(0)),
             target.index = rep(as.integer(1), nrow(data)),
             nodes = colnames(data),
-            .images = NULL,
+            .imscore = NULL,
             ...) {
           ## Node names (stored in constructor of "Score"):
           ## if data has no column names, correct them
@@ -699,10 +699,10 @@ setRefClass("DataScore",
 
           ## No C++ scoring object by default
           c.fcn <<- "none"
-          .images <<- .images
+          .imscore <<- .imscore
           ## R function objects
           pp.dat$local.score <<- function(vertex, parents) local.score(vertex, parents)
-          pp.dat$global.score <<- function(edges) global.score(vertex, parents, .images)
+          pp.dat$global.score <<- function(edges) global.score(vertex, parents, .imscore)
           pp.dat$local.fit <<- function(vertex, parents) local.fit(vertex, parents)
           pp.dat$global.fit <<- function(edges) global.fit(vertex, parents)
         }

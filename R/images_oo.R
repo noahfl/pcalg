@@ -174,19 +174,21 @@ IMaGES <- setRefClass("IMaGES",
     
     
     #TODO: fix and figure out k (lambda?)
-    IMScore <- function(graphs, penalty) {
+    IMScore = function(matrices) {
       
-      
+      graphs <<- .graphs
+      penalty <<- penalty
+      #matrices <<- matrices
       
       #print(typeof(length(scores)))
       m <- length(graphs)
       #print(m)
       #print(dim(matrices[[1]]))
-      #n <- dim(matrices[[1]])[[2]]
+      n <- dim(matrices[[1]])[[2]]
       #print(typeof(n))
       #print(n)
       sum <- 0
-      k <- 5#graphs[[1]]$
+      k <- graphs[[1]]$.score$pp.dat$lambda
       
       for (i in 1:length(scores)) {
         #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
@@ -194,7 +196,7 @@ IMaGES <- setRefClass("IMaGES",
       }
       
       #print(sum)
-      imscore = ((-2/m) *  sum )+ ((penalty * k) * log(n))
+      imscore = ((-2/m) *  sum) + ((penalty * k) * log(n))
       print(imscore)
       return(imscore)
     }
@@ -203,9 +205,9 @@ IMaGES <- setRefClass("IMaGES",
 
 IMaGES$methods(
   initialize = function(matrices = NULL, penalty = 1.5) {
-    images = NULL
+    #images <-
     print("initializing")
-    rawscores = list()
+    rawscores <- list()
     for (i in 1:length(matrices)) {
       print("adding score")
       rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
@@ -221,6 +223,8 @@ IMaGES$methods(
     }
     
     .graphs <<- graphs
+    
+    imscore <- IMScore(matrices)
     
     run()
     
