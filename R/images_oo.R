@@ -207,6 +207,7 @@ IMaGES$methods(
   initialize = function(matrices = NULL, penalty = 1.5) {
     #images <-
     print("initializing")
+    imscore = 0
     rawscores <- list()
     for (i in 1:length(matrices)) {
       print("adding score")

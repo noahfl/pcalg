@@ -488,7 +488,8 @@ setRefClass("Score",
         decomp = "logical",
         c.fcn = "character",
         pp.dat = "list",
-        .pardag.class = "character"),
+        .pardag.class = "character",
+        .imscore = "numeric"),
 
     validity = function(object) {
       ## Check if targets are valid (i.e., unique)
@@ -520,6 +521,7 @@ setRefClass("Score",
           .nodes <<- nodes
           pp.dat$targets <<- .tidyTargets(length(nodes), targets)
           .imscore <<- imscore
+          print(.imscore)
         },
 
         #' Yields a vector of node names
@@ -666,7 +668,8 @@ setRefClass("DataScore",
             nodes <- as.character(1:ncol(data))
           }
           targetList <- .tidyTargets(ncol(data), targets, target.index)
-          callSuper(targets = targetList$targets, nodes, ...)
+          #.imscore <<- imscore
+          callSuper(targets = targetList$targets, nodes, .imscore = .imscore, ...)
 
           ## Order by ascending target indices (necessary for certain scoring objects)
           if (is.unsorted(targetList$target.index)) {
@@ -682,7 +685,7 @@ setRefClass("DataScore",
           pp.dat$vertex.count <<- ncol(data)
           
           
-          #.imscore test
+          #.imscore <<- imscore
           #im.score <- NULL
 
 
@@ -699,7 +702,7 @@ setRefClass("DataScore",
 
           ## No C++ scoring object by default
           c.fcn <<- "none"
-          .imscore <<- .imscore
+          #.imscore <<- .imscore
           ## R function objects
           pp.dat$local.score <<- function(vertex, parents) local.score(vertex, parents)
           pp.dat$global.score <<- function(edges) global.score(vertex, parents, .imscore)
@@ -748,14 +751,14 @@ setRefClass("GaussL0penIntScore",
             intercept = TRUE,
             format = c("raw", "scatter"),
             use.cpp = TRUE,
-            .images = NULL,
+            .imscore = NULL,
             ...) {
           ## Store supplied data in sorted form. Make sure data is a matrix for
           ## linear-Gaussian data
           if (!is.matrix(data)) {
             data <- as.matrix(data)
           }
-          callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, images = .images, ...)
+          callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, .imscore = .imscore, ...)
 
           ## Number of variables
           p <- ncol(data)
@@ -954,7 +957,7 @@ setRefClass("GaussL0penObsScore", contains = "GaussL0penIntScore",
             intercept = FALSE,
             format = c("raw", "scatter"),
             use.cpp = TRUE,
-            .images = NULL,
+            #.images = NULL,
             ...) {
           callSuper(data = data,
               targets = list(integer(0)),
@@ -964,7 +967,7 @@ setRefClass("GaussL0penObsScore", contains = "GaussL0penIntScore",
               intercept = intercept,
               format = format,
               use.cpp = use.cpp,
-              .images = .images,
+              .imscore = .imscore,
               ...)
           }
         )
