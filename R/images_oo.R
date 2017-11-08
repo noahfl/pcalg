@@ -1,5 +1,5 @@
 IMaGES <- setRefClass("IMaGES",
-  fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list"),
+  fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric"),
   
   # validity <- function(object) {
   #   return(TRUE)
@@ -128,19 +128,19 @@ IMaGES <- setRefClass("IMaGES",
       # } else stop("invalid 'algorithm' or \"EssGraph\" object")
     },
     
-    run_phase = function(phase=c("forward")) {
+    run_phase = function(phase="forward", j) {
       
       alg.name <- ""
       
-      phase <- match.arg(phase)
+      #phase <- match.arg(phase)
       
-      if (phase[[1]] == "forawrd") {
+      if (phase == "forward") {
         alg.name <- "GIES-F"
       }
-      else if (phase[[1]] == "backward") {
+      else if (phase == "backward") {
         alg.name <- "GIES-B"
       }
-      else if (phase[[1]] == "turning") {
+      else if (phase == "turning") {
         alg.name <- "GIES-T"
       }
       else {
@@ -148,25 +148,40 @@ IMaGES <- setRefClass("IMaGES",
       }
       
       
-      for (i in 1:length(.graphs)) {
-        if (!.graphs[[i]]$greedy.step(alg.name=alg.name, direction = phase, verbose = FALSE)) {
-          stop("something happened")
-        }
-        else {
-          print(.graphs[[i]])
-        }
+      #for (i in 1:length(.graphs)) {
+      if (!.graphs[[j]]$greedy.step(alg.name=alg.name, direction = phase, verbose = FALSE)) {
+        #stop("something happened")
+        print("SOMETHING HAPPENED. probably that number thing")
+        print(.graphs[[j]]$.nodes)
       }
+      else {
+        print("good")
+        print(.graphs[[j]]$.nodes)
+      }
+      #}
       
     },
     
+    update_score = function() {
+      matrices <<- matrices
+      .imscore <<- IMScore(matrices)
+      
+       for (i in 1:length(.graphs)) {
+         .graphs[[i]]$.score$global.score(scores[[i]]$create.dag(), .imscore=.imscore)
+       }
+    },
+    
+    
     run = function() {
       
-      phases = c("forward", "backward", "turning")
+      phases = list("forward", "backward", "turning")
       
       for (i in 1:length(phases)) {
-        for (i in 1:length(.graphs)) {
-          run_phase(c(phases[[i]]))
-          print("phase")
+        for (j in 1:length(.graphs)) {
+          print(toString(j))
+          run_phase(phases[[i]], j)
+          update_score()
+
         }
       }
     
@@ -178,7 +193,7 @@ IMaGES <- setRefClass("IMaGES",
       
       graphs <<- .graphs
       penalty <<- penalty
-      #matrices <<- matrices
+      matrices <<- matrices
       
       #print(typeof(length(scores)))
       m <- length(graphs)
@@ -192,7 +207,7 @@ IMaGES <- setRefClass("IMaGES",
       
       for (i in 1:length(scores)) {
         #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
-        sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag())
+        sum <- sum + graphs[[i]]$.score$global.score(scores[[i]]$create.dag(), .imscore=NULL)
       }
       
       #print(sum)
@@ -204,10 +219,10 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, penalty = 1.5) {
+  initialize = function(matrices = NULL, penalty = 1.5, imscore = 0) {
     #images <-
     print("initializing")
-    imscore = 0
+    #imscore = 0
     rawscores <- list()
     for (i in 1:length(matrices)) {
       print("adding score")
@@ -225,9 +240,15 @@ IMaGES$methods(
     
     .graphs <<- graphs
     
-    imscore <- IMScore(matrices)
+    imscore <<- IMScore(matrices)
+    
+    print("---------------")
     
     run()
+    
+    for (i in 1:length(.graphs)) {
+      print(.graphs[[i]]$.score$global.score(scores[[i]]$create.dag(), .imscore=NULL))
+    }
     
   }
 )
@@ -345,7 +366,7 @@ setRefClass("IMGraph",
                   warning(paste("The parameter 'adaptive' should not be provided as logical anymore;",
                                 "cf. ?ges or gies", sep = " "))
                 }
-                phase <- match.arg(phase, several.ok = TRUE)
+                #phase <- match.arg(phase, several.ok = TRUE)
                 stopifnot(is.logical(iterate))
                 adaptive <- match.arg(adaptive)
                 if (is.null(fixedGaps)) {
@@ -366,14 +387,13 @@ setRefClass("IMGraph",
               greedy.step = function(alg.name="GIES-F", direction = c("forward"), verbose = FALSE, ...) {
                 stopifnot(!is.null(score <- getScore()))
                 
-                print("Did we get here?")
                 ## Cast direction
-                direction <- match.arg(direction)
+                #direction <- match.arg(direction)
                 #alg.name <- switch(direction,
                 #                   forward = "GIES-F",
                 #                   backward = "GIES-B",
                 #                   turning = "GIES-T")
-                alg.name <- match.arg(alg.name)
+                #alg.name <- match.arg(alg.name)
                 print("calling GES")
                 new.graph <- .Call("causalInference",
                                    .in.edges,
@@ -382,13 +402,16 @@ setRefClass("IMGraph",
                                    score$c.fcn,
                                    causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, phase=direction, ...),
                                    PACKAGE = "imagestest")
-                if (identical(new.graph, "interrupt"))
-                  return(FALSE)
+                #if (identical(new.graph, "interrupt"))
+                #  return(FALSE)
                 
-                if (new.graph$steps > 0) {
-                  .in.edges <<- new.graph$in.edges
-                  names(.in.edges) <<- .nodes
-                }
+                # if (new.graph$steps > 0) {
+                #   .in.edges <<- new.graph$in.edges
+                #   names(.in.edges) <<- .nodes
+                # }
+                
+                .in.edges <<- new.graph$in.edges
+                names(.in.edges) <<- .nodes
                 
                 return(new.graph$steps == 1)
               },
