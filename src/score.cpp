@@ -184,6 +184,13 @@ void ScoreGaussL0PenScatter::setData(Rcpp::List& data)
 		scatterMat = Rcpp::NumericMatrix((SEXP)(scatter[i]));
 		_disjointScatterMatrices[i] = arma::mat(scatterMat.begin(), scatterMat.nrow(), scatterMat.ncol(), false);
 	}
+	
+	
+	
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["local.score"]));
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["global.score"]));
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["local.fit"]));
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["global.fit"]));
 
 	// Cast index of scatter matrices, adjust R indexing convention to C++
 	std::vector<int> scatterIndex = Rcpp::as<std::vector<int> >(data["scatter.index"]);
@@ -237,14 +244,30 @@ double ScoreGaussL0PenScatter::local(const uint vertex, const std::set<uint>& pa
 
 double ScoreGaussL0PenScatter::global(const EssentialGraph& dag) const
 {
-	double result = 0.;
-	uint v;
-
-	// L0-penalized score is decomposable => calculate sum of local scores
-	for (v = 0; v < dag.getVertexCount(); ++v)
-		result += local(v, dag.getParents(v));
-
-	return result;
+	// double result = 0.;
+	// uint v;
+	// 
+	// // L0-penalized score is decomposable => calculate sum of local scores
+	// for (v = 0; v < dag.getVertexCount(); ++v)
+	// 	result += local(v, dag.getParents(v));
+	// 
+	// return result;
+	
+	// Create list of in-edges to pass to R function;
+	// adapt indices to R convention...
+	std::vector<std::vector<uint> > inEdges(_vertexCount);
+  std::set<uint> parents;
+  std::set<uint>::iterator si;
+  uint v;
+  for (v = 0; v < _vertexCount; ++v) {
+    parents = dag.getParents(v);
+    inEdges[v].reserve(parents.size());
+    for (si = parents.begin(); si != parents.end(); ++si)
+      inEdges[v].push_back(*si + 1);
+  }
+  
+  // Call R function for global score
+  return Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
 }
 
 std::vector<double> ScoreGaussL0PenScatter::localMLE(const uint vertex, const std::set<uint>& parents) const
@@ -309,6 +332,11 @@ void ScoreGaussL0PenRaw::setData(Rcpp::List& data)
 	dout.level(3) << "# samples per vertex: " << _dataCount << "\n";
 	_totalDataCount = Rcpp::as<uint>(data["total.data.count"]);
 	dout.level(3) << "Total # samples: " << _totalDataCount << "\n";
+	
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["local.score"]));
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["global.score"]));
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["local.fit"]));
+	_rfunction.push_back(Rcpp::as<Rcpp::Function>(data["global.fit"]));
 
 	// Cast raw data matrix
 	Rcpp::NumericMatrix dataMat((SEXP)(data["data"]));
@@ -371,14 +399,28 @@ double ScoreGaussL0PenRaw::local(const uint vertex, const std::set<uint>& parent
 
 double ScoreGaussL0PenRaw::global(const EssentialGraph& dag) const
 {
-	double result = 0.;
-	uint v;
-
-	// L0-penalized score is decomposable => calculate sum of local scores
-	for (v = 0; v < dag.getVertexCount(); ++v)
-		result += local(v, dag.getParents(v));
-
-	return result;
+	// double result = 0.;
+	// uint v;
+	// 
+	// // L0-penalized score is decomposable => calculate sum of local scores
+	// for (v = 0; v < dag.getVertexCount(); ++v)
+	// 	result += local(v, dag.getParents(v));
+	// 
+	// return result;
+	
+	std::vector<std::vector<uint> > inEdges(_vertexCount);
+  std::set<uint> parents;
+  std::set<uint>::iterator si;
+  uint v;
+  for (v = 0; v < _vertexCount; ++v) {
+    parents = dag.getParents(v);
+    inEdges[v].reserve(parents.size());
+    for (si = parents.begin(); si != parents.end(); ++si)
+      inEdges[v].push_back(*si + 1);
+  }
+  
+  // Call R function for global score
+  return Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
 }
 
 std::vector<double> ScoreGaussL0PenRaw::localMLE(const uint vertex, const std::set<uint>& parents) const

@@ -521,7 +521,7 @@ setRefClass("Score",
           .nodes <<- nodes
           pp.dat$targets <<- .tidyTargets(length(nodes), targets)
           .imscore <<- imscore
-          print(.imscore)
+          print(paste("imscore in 'Score': ", toString(.imscore), "\n"))
         },
 
         #' Yields a vector of node names
@@ -579,7 +579,8 @@ setRefClass("Score",
         #' by its list of in-edges
         global.score.int = function(edges, .imscore, ...) {
           if (!is.null(.imscore)) {
-            print("at .imscore")
+            #print("at .imscore")
+            print(paste("imscore: ", .imscore, "\n"))
             return(as.double(.imscore))
           }
           else {
@@ -595,7 +596,7 @@ setRefClass("Score",
         },
 
         #' Calculates the global score of a DAG
-        global.score = function(dag, .imscore=NULL, ...) {
+        global.score = function(dag, .imscore=.imscore, ...) {
           global.score.int(dag$.in.edges, .imscore, ...)
         },
 

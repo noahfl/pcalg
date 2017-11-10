@@ -95,7 +95,7 @@ RcppExport SEXP globalScore(
 	TargetFamily targets = castTargets(data["targets"]);
 	Score* score = createScore(Rcpp::as<std::string>(argScore), &targets, data);
 
-	// Calculate local score
+	// Calculate global score
 	double result = score->global(castGraph(argInEdges));
 	// TODO: check why this leads to a segfault!!!!
 	delete score;

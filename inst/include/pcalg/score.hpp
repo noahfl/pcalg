@@ -215,6 +215,7 @@ protected:
 	 */
 	std::vector<int> _dataCount;
 	uint _totalDataCount;
+	std::vector<Rcpp::Function> _rfunction;
 
 	/**
 	 * Penalty constant
@@ -281,6 +282,8 @@ protected:
 	 */
 	std::vector<int> _dataCount;
 	uint _totalDataCount;
+	
+	std::vector<Rcpp::Function> _rfunction;
 
 	/**
 	 * Penalty constant

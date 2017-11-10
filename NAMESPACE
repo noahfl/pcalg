@@ -150,7 +150,8 @@ export(trueCov,
        pcalg2dagitty,
        addBgKnowledge,
        adjustment,
-       isValidGraph)
+       isValidGraph,
+       IMaGES)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------
@@ -181,7 +182,9 @@ exportClasses("pcAlgo",
               "Score",
               "GaussL0penIntScore",
               "GaussL0penObsScore",
-              "EssGraph")
+              "EssGraph",
+              "IMaGES",
+              "IMGraph")
 
 exportMethods(# needed? "coerce",# <- defined via setAs(., ..) used via  as(A, "class_B")
               "summary", "show", "plot")

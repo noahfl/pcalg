@@ -1,5 +1,5 @@
 IMaGES <- setRefClass("IMaGES",
-  fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric"),
+  fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list"),
   
   # validity <- function(object) {
   #   return(TRUE)
@@ -8,7 +8,6 @@ IMaGES <- setRefClass("IMaGES",
   
   #TODO: figure out why this isn't being called
   methods = list(
-    #' Constructor
     create.graph = function(
       score, 
       labels = score$getNodes(), 
@@ -111,7 +110,7 @@ IMaGES <- setRefClass("IMaGES",
       }
       
       
-      print("You made it this far")
+      #print("You made it this far")
       imgraph <- new("IMGraph", nodes = labels, targets = targets, score = score)
       return(imgraph)
       # if (essgraph$caus.inf(algorithm, ...)) {
@@ -151,11 +150,11 @@ IMaGES <- setRefClass("IMaGES",
       #for (i in 1:length(.graphs)) {
       if (!.graphs[[j]]$greedy.step(alg.name=alg.name, direction = phase, verbose = FALSE)) {
         #stop("something happened")
-        print("SOMETHING HAPPENED. probably that number thing")
+        #print("SOMETHING HAPPENED. probably that number thing")
         print(.graphs[[j]]$.nodes)
       }
       else {
-        print("good")
+        #print("good")
         print(.graphs[[j]]$.nodes)
       }
       #}
@@ -163,55 +162,78 @@ IMaGES <- setRefClass("IMaGES",
     },
     
     update_score = function() {
-      matrices <<- matrices
-      .imscore <<- IMScore(matrices)
+      
+      imscore <<- IMScore()
+      #imscore <<- IMScore()
+      
+      print("UPDATED")
+      print(imscore)
       
        for (i in 1:length(.graphs)) {
-         .graphs[[i]]$.score$global.score(scores[[i]]$create.dag(), .imscore=.imscore)
+         #print("INITIAL")
+         #print(.graphs[[i]]$.score$.imscore)
+         .graphs[[i]]$.score$.imscore = imscore
+         
+         #print("AFTER")
+         #print(.graphs[[i]]$.score$.imscore)
+         .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=imscore)
        }
     },
     
     
     run = function() {
-      
+      update_score()
       phases = list("forward", "backward", "turning")
       
       for (i in 1:length(phases)) {
         for (j in 1:length(.graphs)) {
-          print(toString(j))
+          #print(toString(j))
           run_phase(phases[[i]], j)
           update_score()
 
         }
       }
-    
+    print("HERE?")
     },
     
-    
-    #TODO: fix and figure out k (lambda?)
-    IMScore = function(matrices) {
+    #TODO: address snowball effect for IMScore
+    IMScore = function() {
       
-      graphs <<- .graphs
-      penalty <<- penalty
-      matrices <<- matrices
+      #graphs <- .graphs
+      #penalty <- get('penalty', envir=globalenv())
+      penalty
+      matrices <- get('matrices', envir=globalenv())
       
       #print(typeof(length(scores)))
-      m <- length(graphs)
+      m <- length(.graphs)
       #print(m)
       #print(dim(matrices[[1]]))
       n <- dim(matrices[[1]])[[2]]
+      #print("N")
+      #print(n)
       #print(typeof(n))
       #print(n)
       sum <- 0
-      k <- graphs[[1]]$.score$pp.dat$lambda
+      k <- .graphs[[1]]$.score$pp.dat$lambda
+      #print("VARS")
+      #print(list(penalty, m, n, sum, k))
       
       for (i in 1:length(scores)) {
         #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
-        sum <- sum + graphs[[i]]$.score$global.score(scores[[i]]$create.dag(), .imscore=NULL)
+        # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
+        # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
+        
+        print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=NULL))
+        sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=NULL)
       }
       
+      #print("SUM")
+      #print(sum)
       #print(sum)
       imscore = ((-2/m) *  sum) + ((penalty * k) * log(n))
+      #imscore <<- imscore
+      #print(paste("imscore in function: ", imscore, "\n"))
+      print("IMSCORE:")
       print(imscore)
       return(imscore)
     }
@@ -219,36 +241,49 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, penalty = 1.5, imscore = 0) {
+  initialize = function(matrices = NULL, penalty = 1.5, imscore = NULL) {
     #images <-
-    print("initializing")
+    #print("initializing")
     #imscore = 0
     rawscores <- list()
     for (i in 1:length(matrices)) {
-      print("adding score")
+      #print("adding score")
       rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
     }
-    .penalty <<- penalty
+    penalty <<- penalty
     .rawscores <<- rawscores
     
     graphs <- list()
     
     for (i in 1:length(.rawscores)) {
-      print("creating graph")
+      #print("creating graph")
       graphs[[i]] <- create.graph(rawscores[[i]])
     }
     
     .graphs <<- graphs
     
-    imscore <<- IMScore(matrices)
+    imscore <<- IMScore()
+    #imscore <<- IMScore()
     
     print("---------------")
     
     run()
     
+    print("---------------")
+    
+    #imscore <<- IMScore()
+    
+    results = list()
+    
+    imscore <- IMScore()
+    print("FINAL SCORES")
     for (i in 1:length(.graphs)) {
-      print(.graphs[[i]]$.score$global.score(scores[[i]]$create.dag(), .imscore=NULL))
+      print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=imscore))
+      #print(list(.graphs[[i]], .graphs[[i]]$repr()))
+      results[[i]] = list(.graphs[[i]], .graphs[[i]]$repr())
     }
+    
+    results <<- results
     
   }
 )
@@ -410,7 +445,12 @@ setRefClass("IMGraph",
                 #   names(.in.edges) <<- .nodes
                 # }
                 
+                print("BEFORE")
+                print(.in.edges)
                 .in.edges <<- new.graph$in.edges
+                print("AFTER")
+                print(.in.edges)
+                
                 names(.in.edges) <<- .nodes
                 
                 return(new.graph$steps == 1)
