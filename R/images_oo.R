@@ -146,6 +146,8 @@ IMaGES <- setRefClass("IMaGES",
         stop("incorrect algorithm name")
       }
       
+      print("ALGORITHM")
+      print(alg.name)
       
       #for (i in 1:length(.graphs)) {
       if (!.graphs[[j]]$greedy.step(alg.name=alg.name, direction = phase, verbose = FALSE)) {
@@ -188,7 +190,7 @@ IMaGES <- setRefClass("IMaGES",
       for (i in 1:length(phases)) {
         for (j in 1:length(.graphs)) {
           #print(toString(j))
-          run_phase(phases[[i]], j)
+          run_phase(phase=phases[[i]], j)
           update_score()
 
         }
