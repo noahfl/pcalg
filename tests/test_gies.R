@@ -6,7 +6,7 @@
 
 cat("Testing the causal inference algorithms for interventional data:\n")
 
-library(pcalg)
+#library(pcalg)
 
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
@@ -14,8 +14,9 @@ source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 load("test_bicscore.rda") # in directory tests/ i.e., typically *not* installed
 # str(gauss.data)
 p <- ncol(gauss.data)
+print(p)
 
-(doExtras <- pcalg:::doExtras())
+(doExtras <- imagestest:::doExtras())
 DBG <- if(doExtras) TRUE else FALSE # no debugging by default
 ## Tolerance for numerical comparison
 tol <- sqrt(.Machine$double.eps) # = default for all.equal()
@@ -124,7 +125,9 @@ for (cpp in c(FALSE, TRUE)) {
   }
 }
 
+print(essgraph$repr())
 cat(if(doExtras) "\n", "Done.\n")
 
 ## add test to confirm bug-fix in 2.5-0
 new("GaussParDAG", "a") ## produced a warning prior to 2.5-0
+

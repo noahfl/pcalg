@@ -1,5 +1,5 @@
 IMaGES <- setRefClass("IMaGES",
-  fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list"),
+  fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list", scores = "list"),
   
   # validity <- function(object) {
   #   return(TRUE)
@@ -174,7 +174,7 @@ IMaGES <- setRefClass("IMaGES",
        for (i in 1:length(.graphs)) {
          #print("INITIAL")
          #print(.graphs[[i]]$.score$.imscore)
-         .graphs[[i]]$.score$.imscore = imscore
+         .graphs[[i]]$.score$.imscore <<- imscore
          
          #print("AFTER")
          #print(.graphs[[i]]$.score$.imscore)
@@ -203,24 +203,26 @@ IMaGES <- setRefClass("IMaGES",
       
       #graphs <- .graphs
       #penalty <- get('penalty', envir=globalenv())
-      penalty
+      penalty <<- penalty
       matrices <- get('matrices', envir=globalenv())
       
       #print(typeof(length(scores)))
       m <- length(.graphs)
       #print(m)
       #print(dim(matrices[[1]]))
-      n <- dim(matrices[[1]])[[2]]
+      n <- ncol(matrices[[1]]) * nrow(matrices[[1]])
       #print("N")
       #print(n)
       #print(typeof(n))
       #print(n)
       sum <- 0
-      k <- .graphs[[1]]$.score$pp.dat$lambda
+      k <- ncol(matrices[[1]])
       #print("VARS")
       #print(list(penalty, m, n, sum, k))
       
-      for (i in 1:length(scores)) {
+      
+      
+      for (i in 1:length(.graphs)) {
         #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
         # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
         # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
@@ -229,10 +231,12 @@ IMaGES <- setRefClass("IMaGES",
         sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=NULL)
       }
       
+      print(paste("n: ", n, " k: ", k, "length: ", length(.graphs), "sum: ", sum))
+      
       #print("SUM")
       #print(sum)
       #print(sum)
-      imscore = ((-2/m) *  sum) + ((penalty * k) * log(n))
+      imscore <- ((-2/m) *  sum) + ((penalty * k) * log(n))
       #imscore <<- imscore
       #print(paste("imscore in function: ", imscore, "\n"))
       print("IMSCORE:")
@@ -243,15 +247,27 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, penalty = 1.5, imscore = NULL) {
+  initialize = function(matrices = NULL, scores = NULL, penalty = 1.5, imscore = NULL) {
     #images <-
     #print("initializing")
     #imscore = 0
     rawscores <- list()
-    for (i in 1:length(matrices)) {
-      #print("adding score")
-      rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
+    
+    #print(paste("penalty: ", penalty))
+    
+    if (!is.null(matrices)) {
+      for (i in 1:length(matrices)) {
+        #print("adding score")
+        rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
+      }  
     }
+    else {
+      for (i in 1:length(scores)) {
+        #print("adding score")
+        rawscores[[i]] <- scores[[i]]
+      }
+    }
+    
     penalty <<- penalty
     .rawscores <<- rawscores
     
@@ -264,7 +280,7 @@ IMaGES$methods(
     
     .graphs <<- graphs
     
-    imscore <<- IMScore()
+    #imscore <<- IMScore()
     #imscore <<- IMScore()
     
     print("---------------")
@@ -275,14 +291,14 @@ IMaGES$methods(
     
     #imscore <<- IMScore()
     
-    results = list()
+    results <<- list()
     
-    imscore <- IMScore()
+    imscore <<- IMScore()
     print("FINAL SCORES")
     for (i in 1:length(.graphs)) {
       print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=imscore))
       #print(list(.graphs[[i]], .graphs[[i]]$repr()))
-      results[[i]] = list(.graphs[[i]], .graphs[[i]]$repr())
+      results[[i]] <<- list(.graphs[[i]], .graphs[[i]]$repr())
     }
     
     results <<- results

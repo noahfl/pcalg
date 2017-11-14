@@ -522,6 +522,7 @@ setRefClass("Score",
           pp.dat$targets <<- .tidyTargets(length(nodes), targets)
           .imscore <<- imscore
           print(paste("imscore in 'Score': ", toString(.imscore), "\n"))
+          c.fcn <<- "none"
         },
 
         #' Yields a vector of node names
@@ -757,6 +758,7 @@ setRefClass("GaussL0penIntScore",
           ## Store supplied data in sorted form. Make sure data is a matrix for
           ## linear-Gaussian data
           if (!is.matrix(data)) {
+            print(data)
             data <- as.matrix(data)
           }
           callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, .imscore = .imscore, ...)
@@ -841,7 +843,7 @@ setRefClass("GaussL0penIntScore",
           validate.vertex(vertex)
           validate.parents(parents)
 
-          if (c.fcn == "none") {
+          if (c.fcn != "none") {
             ## Calculate score in R
             if (.format == "raw") {
               ## calculate score from raw data matrix
@@ -876,7 +878,9 @@ setRefClass("GaussL0penIntScore",
             }
 
             ## Return local score
-            return(-0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents)))
+            res <- -0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents))
+            print(paste("res: ", res, "lambda: ", pp.dat$lambda))
+            return(res)
           } else {
             ## Calculate score with the C++ library
             return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
