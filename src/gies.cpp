@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 // #include <boost/lambda/lambda.hpp>
 #include <boost/graph/adjacency_list.hpp>
 // Experimental support for OpenMP; aim: parallelize more and more functions...
@@ -98,6 +100,11 @@ RcppExport SEXP globalScore(
 	// Calculate global score
 	double result = score->global(castGraph(argInEdges));
 	// TODO: check why this leads to a segfault!!!!
+	std::ofstream logfile;
+	logfile.open("log_images.txt", std::ios::app);
+	logfile << "Result from gies.cpp/globalScore: " << result << "\n";
+	std::cout << "Result from gies.cpp/globalScore: " << result;
+	logfile.close();
 	delete score;
 	return Rcpp::wrap(result);
 
@@ -258,6 +265,12 @@ RcppExport SEXP causalInference(
 	std::vector<int> steps;
 	std::vector<std::string> stepNames;
 	std::stringstream ss;
+	
+	std::ofstream logfile;
+	logfile.open("log_images.txt", std::ios::app);
+	logfile << "Reached causalInference" << "\n";
+	std::cout << "Reached causalInference";
+	logfile.close();
 
 	// Cast option for limits in vertex degree
 	dout.level(2) << "  Casting maximum vertex degree...\n";
