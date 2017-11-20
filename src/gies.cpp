@@ -269,7 +269,7 @@ RcppExport SEXP causalInference(
 	std::ofstream logfile;
 	logfile.open("log_images.txt", std::ios::app);
 	logfile << "Reached causalInference" << "\n";
-	std::cout << "Reached causalInference";
+	std::cout << "Reached causalInference. Algorithm: " << algName << "\n";
 	logfile.close();
 
 	// Cast option for limits in vertex degree

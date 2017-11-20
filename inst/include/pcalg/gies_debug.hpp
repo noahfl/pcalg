@@ -13,7 +13,7 @@
 
 // Define default debug level
 #ifndef DEBUG_OUTPUT_LEVEL
-#define DEBUG_OUTPUT_LEVEL 0
+#define DEBUG_OUTPUT_LEVEL 10
 #endif
 
 namespace std {

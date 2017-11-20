@@ -210,13 +210,13 @@ IMaGES <- setRefClass("IMaGES",
       m <- length(.graphs)
       #print(m)
       #print(dim(matrices[[1]]))
-      n <- ncol(matrices[[1]]) * nrow(matrices[[1]])
+      n <- ncol(.graphs[[1]]$.score$pp.dat$data) * nrow(.graphs[[1]]$.score$pp.dat$data)
       #print("N")
       #print(n)
       #print(typeof(n))
       #print(n)
       sum <- 0
-      k <- ncol(matrices[[1]])
+      k <- nrow(.graphs[[1]]$.score$pp.dat$data)
       #print("VARS")
       #print(list(penalty, m, n, sum, k))
       
@@ -257,6 +257,7 @@ IMaGES$methods(
     
     if (!is.null(matrices)) {
       for (i in 1:length(matrices)) {
+        
         #print("adding score")
         rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
       }  
@@ -264,6 +265,7 @@ IMaGES$methods(
     else {
       for (i in 1:length(scores)) {
         #print("adding score")
+        print(paste("num rows: ", nrow(scores[[i]]$pp.dat$data)))
         rawscores[[i]] <- scores[[i]]
       }
     }

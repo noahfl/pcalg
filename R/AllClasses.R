@@ -843,48 +843,48 @@ setRefClass("GaussL0penIntScore",
           validate.vertex(vertex)
           validate.parents(parents)
 
-          if (c.fcn != "none") {
+#          if (c.fcn != "none") {
             ## Calculate score in R
-            if (.format == "raw") {
-              ## calculate score from raw data matrix
-              ## Response vector for linear regression
-              Y <- pp.dat$data[pp.dat$non.int[[vertex]], vertex]
-              sigma2 <- sum(Y^2)
+          if (.format == "raw") {
+            ## calculate score from raw data matrix
+            ## Response vector for linear regression
+            Y <- pp.dat$data[pp.dat$non.int[[vertex]], vertex]
+            sigma2 <- sum(Y^2)
 
-              if (length(parents) + pp.dat$intercept != 0) {
-                ## Get data matrix on which linear regression is based
-                Z <- pp.dat$data[pp.dat$non.int[[vertex]], parents, drop = FALSE]
-                if (pp.dat$intercept)
-                  Z <- cbind(1, Z)
-
-                ## Calculate the scaled error covariance using QR decomposition
-                Q <- qr.Q(qr(Z))
-                sigma2 <- sigma2 - sum((Y %*% Q)^2)
-              }
-            }
-            else if (.format == "scatter") {
-              ## Calculate the score based on pre-calculated scatter matrices
-              ## If an intercept is allowed, add a fake parent node
-              parents <- sort(parents)
+            if (length(parents) + pp.dat$intercept != 0) {
+              ## Get data matrix on which linear regression is based
+              Z <- pp.dat$data[pp.dat$non.int[[vertex]], parents, drop = FALSE]
               if (pp.dat$intercept)
-                parents <- c(pp.dat$vertex.count + 1, parents)
+                Z <- cbind(1, Z)
 
-              pd.scMat <- pp.dat$scatter[[pp.dat$scatter.index[vertex]]]
-              sigma2 <- pd.scMat[vertex, vertex]
-              if (length(parents) != 0) {
-                b <- pd.scMat[vertex, parents]
-                sigma2 <- sigma2 - as.numeric(b %*% solve(pd.scMat[parents, parents], b))
-              }
+              ## Calculate the scaled error covariance using QR decomposition
+              Q <- qr.Q(qr(Z))
+              sigma2 <- sigma2 - sum((Y %*% Q)^2)
             }
+          }
+          else if (.format == "scatter") {
+            ## Calculate the score based on pre-calculated scatter matrices
+            ## If an intercept is allowed, add a fake parent node
+            parents <- sort(parents)
+            if (pp.dat$intercept)
+              parents <- c(pp.dat$vertex.count + 1, parents)
 
-            ## Return local score
-            res <- -0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents))
-            print(paste("res: ", res, "lambda: ", pp.dat$lambda))
-            return(res)
-          } else {
-            ## Calculate score with the C++ library
-            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
-          } # IF c.fcn
+            pd.scMat <- pp.dat$scatter[[pp.dat$scatter.index[vertex]]]
+            sigma2 <- pd.scMat[vertex, vertex]
+            if (length(parents) != 0) {
+              b <- pd.scMat[vertex, parents]
+              sigma2 <- sigma2 - as.numeric(b %*% solve(pd.scMat[parents, parents], b))
+            }
+          }
+
+          ## Return local score
+          res <- -0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents))
+          #print(paste("res: ", res, "lambda: ", pp.dat$lambda))
+          return(res)
+#          } else {
+#            ## Calculate score with the C++ library
+#            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
+#          } # IF c.fcn
         },
 
         #' Calculates the local MLE for a vertex and its parents
