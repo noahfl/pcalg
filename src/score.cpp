@@ -147,7 +147,9 @@ std::vector<double> ScoreRFunction::localMLE(const uint vertex, const std::set<u
 		(*vi)++;
 
 	// Return local MLE
-	return Rcpp::as< std::vector<double> >(_rfunction[R_FCN_INDEX_LOCAL_MLE](vertex + 1, shiftParents));
+	std::vector<double> result = Rcpp::as< std::vector<double> >(_rfunction[R_FCN_INDEX_LOCAL_MLE](vertex + 1, shiftParents));
+	std::cout << "Local MLE: " << result << "\n";
+	return result;
 }
 
 std::vector< std::vector<double> > ScoreRFunction::globalMLE(const EssentialGraph& dag) const
@@ -337,8 +339,8 @@ std::vector<double> ScoreGaussL0PenScatter::localMLE(const uint vertex, const st
 		std::copy(b.memptr(), b.memptr() + (_allowIntercept ? b.n_elem - 1 : b.n_elem), result.begin() + 2);
 	}
 
-	dout.level(3) << "Local MLE: " << result << "\n";
-
+  //dout.level(3) << "Local MLE: " << result << "\n";
+  std::cout << "Local MLE: " << result << "\n";
 	return result;
 }
 
@@ -521,7 +523,7 @@ std::vector<double> ScoreGaussL0PenRaw::localMLE(const uint vertex, const std::s
 	}
 
 	dout.level(3) << "Local MLE: " << result << "\n";
-
+	std::cout << "Local MLE: " << result << "\n";
 	return result;
 }
 

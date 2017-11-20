@@ -1236,6 +1236,9 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 	// For DEBUGGING purposes: print phase
 	dout.level(1) << "== starting forward phase ("
 			<< (adaptive ? "" : "not ") << "adaptive)...\n";
+	
+	std::cout << "== starting forward phase ("
+               << (adaptive ? "" : "not ") << "adaptive)...\n";
 
 	// Initialize optimal score gain
 	optInsertion.score = _minScoreDiff;
@@ -1248,6 +1251,7 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 
 			// Look for optimal score
 			if (insertion.score > optInsertion.score) {
+			  
 				optInsertion = insertion;
 				v_opt = v;
 			}
@@ -1274,6 +1278,9 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 		// For DEBUGGING purposes: print inserted arrow
 		dout.level(1) << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
 				<< optInsertion.clique << ", S = " << optInsertion.score << "\n";
+		
+		std::cout << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
+                << optInsertion.clique << ", S = " << optInsertion.score << "\n";
 
 		uint u_opt = optInsertion.source;
 		EdgeOperationLogger edgeLogger;
@@ -1375,6 +1382,8 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 
 			// Unregister logger
 			removeLogger(&edgeLogger);
+			
+			std::cout << "Done with greedyForward()";
 		}
 
 		return true;
@@ -1390,6 +1399,8 @@ bool EssentialGraph::greedyBackward()
 
 	// For DEBUGGING purposes: print phase
 	dout.level(1) << "== starting backward phase...\n" ;
+	
+	std::cout << "== starting backward phase...\n" ;
 
 	// Initialize optimal score gain
 	optDeletion.score = _minScoreDiff;
@@ -1416,6 +1427,9 @@ bool EssentialGraph::greedyBackward()
 		// For DEBUGGING purposes
 		dout.level(1) << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
 				<< optDeletion.clique << ", S = " << optDeletion.score << "\n";
+		
+		std::cout << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
+                << optDeletion.clique << ", S = " << optDeletion.score << "\n";
 		remove(optDeletion.source, v_opt, optDeletion.clique);
 		//getAdjacencyMatrix().print("A = ");
 		return true;
@@ -1431,6 +1445,7 @@ bool EssentialGraph::greedyTurn()
 
 	// For DEBUGGING purposes: print phase
 	dout.level(1) << "== starting turning phase...\n" ;
+	std::cout << "== starting turning phase...\n" ;
 
 	// Initialize optimal score gain
 	optTurning.score = _minScoreDiff;
@@ -1458,6 +1473,9 @@ bool EssentialGraph::greedyTurn()
 		// For DEBUGGING purposes
 		dout.level(1) << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
 				<< optTurning.clique << ", S = " << optTurning.score << "\n";
+		
+		std::cout << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
+                << optTurning.clique << ", S = " << optTurning.score << "\n";
 		turn(optTurning.source, v_opt, optTurning.clique);
 		//getAdjacencyMatrix().print("A = ");
 		return true;

@@ -520,9 +520,9 @@ setRefClass("Score",
             ...) {
           .nodes <<- nodes
           pp.dat$targets <<- .tidyTargets(length(nodes), targets)
-          .imscore <<- imscore
-          print(paste("imscore in 'Score': ", toString(.imscore), "\n"))
+          #.imscore <<- imscore
           c.fcn <<- "none"
+
         },
 
         #' Yields a vector of node names
@@ -879,6 +879,7 @@ setRefClass("GaussL0penIntScore",
 
           ## Return local score
           res <- -0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents))
+          #print(paste("Test var: ", test.env$tst))
           #print(paste("res: ", res, "lambda: ", pp.dat$lambda))
           return(res)
 #          } else {

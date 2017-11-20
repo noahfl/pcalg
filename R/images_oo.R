@@ -253,6 +253,8 @@ IMaGES$methods(
     #imscore = 0
     rawscores <- list()
     
+    test.env <- new.env()
+    test.env$tst <- "TEST"
     #print(paste("penalty: ", penalty))
     
     if (!is.null(matrices)) {
