@@ -729,6 +729,13 @@ public:
 	 * yields the highest score gain.
 	 */
 	step_dir greedyStep();
+	
+	/**
+	 * Does one greedy step, either forward, backward, or turning, the one that
+	 * yields the highest score gain.
+	 */
+	//step_dir greedyStepR();
+	int greedyStepR();
 
 	/**
 	 * Does one forward step of the greedy DAG search (i.e., not over interventional

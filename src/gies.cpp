@@ -10,12 +10,18 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <map>
+#include <stack>
+#include <boost/tuple/tuple.hpp>
+#include <boost/unordered_map.hpp>
 // #include <boost/lambda/lambda.hpp>
 #include <boost/graph/adjacency_list.hpp>
 // Experimental support for OpenMP; aim: parallelize more and more functions...
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include <typeinfo>
 
 // Define BGL class for undirected graph
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS> UndirectedGraph;
@@ -206,6 +212,173 @@ RcppExport SEXP globalMLE(
 	return Rcpp::wrap(result);
 
 	END_RCPP
+}
+
+
+/**
+ * Interface to greedyStep()
+ *
+ * @param 	argGraph			list of in-edges representing the current
+ * 								essential graph
+ * 
+ * @export
+ * 
+ * [[Rcpp::export]]
+ */
+RcppExport SEXP greedyStepRFunc(
+    SEXP argGraph,
+    SEXP argPreprocData,
+    SEXP argScore,
+    SEXP argOptions
+)
+{
+  std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
+  
+  BEGIN_RCPP
+  
+  Rcpp::List options(argOptions);
+  dout.setLevel(Rcpp::as<int>(options["DEBUG.LEVEL"]));
+  
+  // Cast graph
+  dout.level(1) << "Casting graph...\n";
+  EssentialGraph graph = castGraph(argGraph);
+  uint p = graph.getVertexCount();
+  
+  // Cast list of targets
+  dout.level(1) << "Casting options...\n";
+  dout.level(2) << "  Casting list of targets...\n";
+  Rcpp::List data(argPreprocData);
+  TargetFamily targets = castTargets(data["targets"]);
+  
+  // Cast algorithm string
+  dout.level(2) << "  Casting algorithm and options...\n";
+  //std::string algName = Rcpp::as<std::string>(argAlgorithm);
+  
+  // Cast score
+  //TODO: edit from here
+  dout.level(2) << "  Casting score...\n";
+  Score* score = createScore(Rcpp::as<std::string>(argScore), &targets, data);
+  
+  graph.setScore(score);
+  graph.setTargets(&targets);
+  
+  std::vector<int> steps;
+  std::vector<std::string> stepNames;
+  std::stringstream ss;
+  
+  std::ofstream logfile;
+  logfile.open("log_images.txt", std::ios::app);
+  logfile << "Reached causalInference" << "\n";
+  std::cout << "Reached mid level of greedyStepR\n";
+  logfile.close();
+  
+  // Cast option for limits in vertex degree
+  dout.level(2) << "  Casting maximum vertex degree...\n";
+  Rcpp::NumericVector maxDegree((SEXP)(options["maxDegree"]));
+  if (maxDegree.size() > 0) {
+    if (maxDegree.size() == 1) {
+      if (maxDegree[0] >= 1.) {
+        uint uniformMaxDegree = static_cast<uint>(maxDegree[0]);
+        graph.limitVertexDegree(uniformMaxDegree);
+      }
+      else {
+        double maxRelativeDegree = maxDegree[0];
+        graph.limitVertexDegree(maxRelativeDegree);
+      }
+    }
+    else {
+      std::vector<uint> maxDegrees = Rcpp::as< std::vector<uint> >(options["maxDegree"]);
+      graph.limitVertexDegree(maxDegrees);
+    }
+  }
+  
+  // Cast option for required phases
+  dout.level(2) << "  Casting phases...\n";
+  std::vector< std::string > optPhases = Rcpp::as< std::vector<std::string> >(options["phase"]);
+  std::vector< step_dir > phases(optPhases.size(), SD_FORWARD);
+  for (uint i = 0; i < optPhases.size(); ++i) {
+    if (optPhases[i] == "backward") {
+      phases[i] = SD_BACKWARD;
+    }
+    else if (optPhases[i] == "turning") {
+      phases[i] = SD_TURNING;
+    }
+  }
+  dout.level(2) << "  Casting iterative...\n";
+  bool doIterate = Rcpp::as<bool>(options["iterate"]);
+  
+  // Cast option for vertices which are not allowed to have parents
+  // TODO: activate function in R, and check for conversion from R to C indexing convention
+  std::vector<uint> childrenOnly = Rcpp::as< std::vector<uint> >(options["childrenOnly"]);
+  for (std::vector<uint>::iterator vi = childrenOnly.begin(); vi != childrenOnly.end(); ++vi)
+    graph.setChildrenOnly(*vi - 1, true);
+  int stepLimit;
+  
+  // Cast option for fixed gaps: logical matrix, assumed to be symmetric by now
+  dout.level(2) << "  Casting fixed gaps...\n";
+  if (!Rf_isNull(options["fixedGaps"])) {
+    Rcpp::LogicalMatrix gapsMatrix((SEXP)(options["fixedGaps"]));
+    uint n_gaps = 0;
+    for (int i = 0; i < p; ++i)
+      for (int j = i + 1; j < p; ++j)
+        if (gapsMatrix(i, j))
+          n_gaps++;
+        // Invert gaps if more than half of the possible edges are fixed gaps
+        bool gapsInverted = 4*n_gaps > p*(p - 1);
+        EssentialGraph fixedGaps(p);
+        for (int i = 0; i < p; ++i)
+          for (int j = i + 1; j < p; ++j)
+            if (gapsMatrix(i, j) ^ gapsInverted)
+              fixedGaps.addEdge(i, j, true);
+            graph.setFixedGaps(fixedGaps, gapsInverted);
+  }
+  
+  // Cast option for adaptive handling of fixed gaps (cf. "ARGES")
+  dout.level(2) << "  Casting adaptive flag...\n";
+  ForwardAdaptiveFlag adaptive(NONE);
+  std::string optAdaptive = options["adaptive"];
+  dout.level(2) << "Option 'adaptive': " << optAdaptive << std::endl;
+  if (optAdaptive == "vstructures") {
+    adaptive = VSTRUCTURES;
+  }
+  if (optAdaptive == "triples") {
+    adaptive = TRIPLES;
+  }
+  
+  //std::cout << "Made it to greedyStepRFunc\n";
+  //EssentialGraph graph = castGraph(argGraph);
+  
+  int dir = graph.greedyStepR();
+  
+  int res = dir;
+  
+  // std::string res = "";
+  // 
+  // std::cout << "STEP DIR: " << dir << "\n";
+  // 
+  // std::cout << "DIR TYPE: " << typeid(dir).name() << "\n";
+  // 
+  // std::string sd_f = "GIES-F";
+  // std::string sd_b = "GIES-B";
+  // std::string sd_t = "GIES-T";
+  // std::string sd_n = "none";
+  // 
+  // switch (dir) {
+  //   //case SD_FORWARD:  res = "GIES-F";
+  //   case 1: res = sd_f;
+  //   //case SD_BACKWARD: res = "GIES-B";
+  //   case 2: res = sd_b;
+  //   //case SD_TURNING:  res = "GIES-T";
+  //   case 3: res = sd_t;
+  //   case 0: res = sd_n;
+  // }
+  
+//std::string res = std::to_string(dir);
+
+  std::cout << "RES: " << res << "\n";
+  return Rcpp::wrap(res);
+  
+  END_RCPP
 }
 
 /**

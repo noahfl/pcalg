@@ -127,24 +127,27 @@ IMaGES <- setRefClass("IMaGES",
       # } else stop("invalid 'algorithm' or \"EssGraph\" object")
     },
     
-    run_phase = function(phase="forward", j) {
+    run_phase = function(phase="GIES-F", j) {
       
-      alg.name <- ""
+      alg.name <- phase
       
-      #phase <- match.arg(phase)
-      
-      if (phase == "forward") {
-        alg.name <- "GIES-F"
-      }
-      else if (phase == "backward") {
-        alg.name <- "GIES-B"
-      }
-      else if (phase == "turning") {
-        alg.name <- "GIES-T"
-      }
-      else {
-        stop("incorrect algorithm name")
-      }
+      # alg.name <- ""
+      # 
+      # #phase <- match.arg(phase)
+      # 
+      # if (phase == "forward") {
+      #   alg.name <- "GIES-F"
+      # }
+      # else if (phase == "backward") {
+      #   alg.name <- "GIES-B"
+      # }
+      # else if (phase == "turning") {
+      #   alg.name <- "GIES-T"
+      # }
+      # else {
+      #   print(paste("alg name: ", alg.name))
+      #   stop("incorrect algorithm name")
+      # }
       
       print("ALGORITHM")
       print(alg.name)
@@ -161,6 +164,28 @@ IMaGES <- setRefClass("IMaGES",
       }
       #}
       
+    },
+    
+    #only finds first max. look into this
+    find_opt = function(opt_phases) {
+      phases <- list()
+      phase_counts = list()
+      for (i in 1:length(opt_phases)) {
+        if ((length(phases) == 0) || !(is.element(opt_phases[[i]], phases))) {
+          phases[[length(phases) + 1]] <- opt_phases[[i]]
+          phase_counts[[length(phase_counts) + 1]] = 1
+        }
+        else {
+          phase_counts[[match(opt_phases[[i]], phases)]] = phase_counts[[match(opt_phases[[i]], phases)]] + 1
+        }
+
+      }
+      max_val = max(unlist(phase_counts))
+      index = match(max_val, phase_counts)
+      
+      print(paste("max val: ", max_val, " index: ", index, " phase[[index]]: ", phases[[index]]))
+      
+      return(phases[[index]])
     },
     
     update_score = function() {
@@ -184,17 +209,56 @@ IMaGES <- setRefClass("IMaGES",
     
     
     run = function() {
+      print("start of run")
       update_score()
+      print("score updated")
       phases = list("forward", "backward", "turning")
       
-      for (i in 1:length(phases)) {
+      opt_phases = list()
+      
+      #for (i in 1:length(phases)) {
         for (j in 1:length(.graphs)) {
           #print(toString(j))
-          run_phase(phase=phases[[i]], j)
-          update_score()
-
+          #print("MADE IT HERE")
+          #opt_phases[[i]] = .Call("greedyStepRFunc", .graphs[[i]$.in.edges, PACKAGE = "imagestest")
+          opt_phases[[j]] <- .Call("greedyStepRFunc",
+                                  .graphs[[j]]$.in.edges,
+                                  .graphs[[j]]$.score$pp.dat,
+                                  .graphs[[j]]$.score$c.fcn,
+                                  .graphs[[j]]$causal.inf.options(caching = FALSE, maxSteps = 1),
+                                  PACKAGE = "imagestest")
+        }
+      #}
+      
+      for (i in 1:length(opt_phases)) {
+        if (opt_phases[[i]] == 1) {
+          opt_phases[[i]] <- 'GIES-F'
+        }
+        else if (opt_phases[[i]] == 2) {
+          opt_phases[[i]] <- 'GIES-B'
+        }
+        else if (opt_phases[[i]] == 3) {
+          opt_phases[[i]] <- 'GIES-T'
+        }
+        else if (opt_phases[[i]] == 0) {
+          opt_phases[[i]] <- 'none'
         }
       }
+      
+      print(paste("phases: ", opt_phases))
+      opt = find_opt(opt_phases)
+      
+      if (opt != "none") {
+        for (j in 1:length(.graphs)) {
+          #print(toString(j))
+          run_phase(phase=opt, j)
+          update_score()
+          
+        }
+      }
+      
+
+
     print("HERE?")
     },
     
@@ -289,7 +353,11 @@ IMaGES$methods(
     
     print("---------------")
     
-    run()
+    for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
+      #print("test")
+      run()      
+    }
+
     
     print("---------------")
     

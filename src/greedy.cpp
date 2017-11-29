@@ -1501,6 +1501,8 @@ bool EssentialGraph::greedyStepDir(const step_dir direction, const ForwardAdapti
 	} // SWITCH direction
 }
 
+
+
 step_dir EssentialGraph::greedyStep()
 {
 	uint v_opt = 0;
@@ -1577,6 +1579,92 @@ step_dir EssentialGraph::greedyStep()
 	}
 
 	return optDir;
+}
+
+int EssentialGraph::greedyStepR()
+{
+  uint v_opt = 0;
+  //step_dir optDir;
+  int optDir;
+  ArrowChange change, optChange;
+  
+  // For DEBUGGING purposes: print phase
+  dout.level(3) << "== looking for optimal step...\n" ;
+  
+  // Initialize optimal score gain
+  optChange.score = _minScoreDiff;
+  //optDir = SD_NONE;
+  optDir = 0;
+  
+  // Look for optimal arrow insertion
+  for (uint v = 0; v < getVertexCount(); v++) {
+    change = getOptimalArrowInsertion(v);
+    
+    // Look for optimal score
+    if (change.score > optChange.score) {
+      optChange = change;
+      v_opt = v;
+      //optDir = SD_FORWARD;
+      optDir = 1;
+    }
+  }
+  
+  // Look for optimal arrow deletion
+  for (uint v = 0; v < getVertexCount(); v++) {
+    change = getOptimalArrowDeletion(v);
+    
+    // Look for optimal score
+    if (change.score > optChange.score) {
+      optChange = change;
+      v_opt = v;
+      //optDir = SD_BACKWARD;
+      optDir = 2;
+    }
+  }
+  
+  // Look for optimal arrow turning
+  for (uint v = 0; v < getVertexCount(); v++) {
+    change = getOptimalArrowTurning(v);
+    
+    // Look for optimal score
+    if (change.score > optChange.score) {
+      optChange = change;
+      v_opt = v;
+      //optDir = SD_TURNING;
+      optDir = 3;
+    }
+  }
+  
+  std::cout << "SD_FORWARD:" << SD_FORWARD << " SD_BACKWARD: " << SD_BACKWARD << " SD_TURNING: " << SD_TURNING <<"\n";
+  
+  // If caching is enabled, reset cache since it is not valid any more
+  // after an arbitrary step
+  if (_doCaching)
+    _actualPhase = SD_NONE;
+    //_actualPhase = 0;
+  
+  // If the score can be augmented, perform the optimal step
+  // switch(optDir) {
+  // case SD_FORWARD :
+  //   dout.level(3) << "  inserting edge (" << optChange.source << ", " << v_opt << ") with C = "
+  //                 << optChange.clique << ", S = " << optChange.score << "\n";
+  //   insert(optChange.source, v_opt, optChange.clique);
+  //   break;
+  // case SD_BACKWARD :
+  //   dout.level(1) << "  deleting edge (" << optChange.source << ", " << v_opt << ") with C = "
+  //                 << optChange.clique << ", S = " << optChange.score << "\n";
+  //   remove(optChange.source, v_opt, optChange.clique);
+  //   break;
+  // case SD_TURNING :
+  //   dout.level(1) << "  turning edge (" << v_opt << ", " << optChange.source << ") with C = "
+  //                 << optChange.clique << ", S = " << optChange.score << "\n";
+  //   turn(optChange.source, v_opt, optChange.clique);
+  //   break;
+  // case SD_NONE :
+  //   break;
+  // }
+  
+  return optDir;
 }
 
 bool EssentialGraph::greedyDAGForward()
