@@ -6,7 +6,6 @@ IMaGES <- setRefClass("IMaGES",
   # },
   
   
-  #TODO: figure out why this isn't being called
   methods = list(
     create.graph = function(
       score, 
@@ -59,6 +58,7 @@ IMaGES <- setRefClass("IMaGES",
       
       # Error checks
       if (!inherits(score, "Score")) {
+        #print(score)
         stop("Argument 'score' must be an instance of a class inherited from 'Score'.")
       }
       #phase <- match.arg(phase, several.ok = TRUE)
@@ -330,7 +330,7 @@ IMaGES$methods(
     }
     else {
       for (i in 1:length(scores)) {
-        #print("adding score")
+        print(paste("length of scores: ", length(scores)))
         print(paste("num rows: ", nrow(scores[[i]]$pp.dat$data)))
         rawscores[[i]] <- scores[[i]]
       }
