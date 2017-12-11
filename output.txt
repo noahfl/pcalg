@@ -1,0 +1,89 @@
+List of 2
+ $ :Reference class 'IMGraph' [package "imagestest"] with 4 fields
+  ..$ .nodes   : chr [1:8] "Author" "Bar" "Ctrl" "Goal" ...
+  ..$ .in.edges:List of 8
+  .. ..$ Author: int(0) 
+  .. ..$ Bar   : int(0) 
+  .. ..$ Ctrl  : int(0) 
+  .. ..$ Goal  : int(0) 
+  .. ..$ V5    : int 8
+  .. ..$ V6    : int(0) 
+  .. ..$ V7    : int(0) 
+  .. ..$ V8    : int 5
+  ..$ .targets :List of 1
+  .. ..$ : int(0) 
+  ..$ .score   :Reference class 'GaussL0penObsScore' [package "imagestest"] with 7 fields
+  .. ..$ .nodes       : chr [1:8] "Author" "Bar" "Ctrl" "Goal" ...
+  .. ..$ decomp       : logi TRUE
+  .. ..$ c.fcn        : chr "gauss.l0pen.scatter"
+  .. ..$ pp.dat       :List of 15
+  .. .. ..$ targets         :List of 1
+  .. .. .. ..$ : int(0) 
+  .. .. ..$ target.index    : int [1:5000] 1 1 1 1 1 1 1 1 1 1 ...
+  .. .. ..$ data            : num [1:5000, 1:8] 1.5764 0.0271 -0.5751 0.6012 0.2756 ...
+  .. .. .. ..- attr(*, "dimnames")=List of 2
+  .. .. .. .. ..$ : NULL
+  .. .. .. .. ..$ : chr [1:8] "Author" "Bar" "Ctrl" "Goal" ...
+  .. .. ..$ vertex.count    : int 8
+  .. .. ..$ non.int         :List of 8
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. .. ..$ : int [1:5000] 1 2 3 4 5 6 7 8 9 10 ...
+  .. .. ..$ data.count      : int [1:8] 5000 5000 5000 5000 5000 5000 5000 5000
+  .. .. ..$ total.data.count: int 5000
+  .. .. ..$ local.score     :function (vertex, parents)  
+  .. .. .. ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 709 34 709 87 34 87 777 777
+  .. .. .. .. .. ..- attr(*, "srcfile")=Classes 'srcfilealias', 'srcfile' <environment: 0x5f8a9f8> 
+  .. .. ..$ global.score    :function (edges)  
+  .. .. .. ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 710 35 710 89 35 89 778 778
+  .. .. .. .. .. ..- attr(*, "srcfile")=Classes 'srcfilealias', 'srcfile' <environment: 0x5f8a9f8> 
+  .. .. ..$ local.fit       :function (vertex, parents)  
+  .. .. .. ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 711 32 711 83 32 83 779 779
+  .. .. .. .. .. ..- attr(*, "srcfile")=Classes 'srcfilealias', 'srcfile' <environment: 0x5f8a9f8> 
+  .. .. ..$ global.fit      :function (edges)  
+  .. .. .. ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 712 33 712 75 33 75 780 780
+  .. .. .. .. .. ..- attr(*, "srcfile")=Classes 'srcfilealias', 'srcfile' <environment: 0x5f8a9f8> 
+  .. .. ..$ lambda          : num 2
+  .. .. ..$ intercept       : logi FALSE
+  .. .. ..$ scatter.index   : num [1:8] 1 1 1 1 1 1 1 1
+  .. .. ..$ scatter         :List of 1
+  .. .. .. ..$ : num [1:9, 1:9] 4927 1419 972 -50 216 ...
+  .. .. .. .. ..- attr(*, "dimnames")=List of 2
+  .. .. .. .. .. ..$ : chr [1:9] "Author" "Bar" "Ctrl" "Goal" ...
+  .. .. .. .. .. ..$ : chr [1:9] "Author" "Bar" "Ctrl" "Goal" ...
+  .. ..$ .pardag.class: chr "GaussParDAG"
+  .. ..$ .imscore     : num 49003
+  .. ..$ .format      : chr "scatter"
+  .. ..and 33 methods, of which 19 are  possibly relevant:
+  .. ..  c.fcn.options, create.dag, getNodes, getTargets, global.fit, global.score, global.score.int, initialize, initialize#DataScore, initialize#GaussL0penIntScore, initialize#Score, local.fit, local.fit#Score, local.score,
+  .. ..  local.score#Score, node.count, setTargets, validate.parents, validate.vertex
+  ..and 25 methods, of which 11 are  possibly relevant:
+  ..  causal.inf.options, edge.count, getScore, getTargets, greedy.step, initialize, node.count, opt.target, repr, setScore, setTargets
+ $ :Reference class 'GaussParDAG' [package "imagestest"] with 3 fields
+  ..$ .nodes   : chr [1:8] "Author" "Bar" "Ctrl" "Goal" ...
+  ..$ .in.edges:List of 8
+  .. ..$ : int(0) 
+  .. ..$ : int(0) 
+  .. ..$ : int(0) 
+  .. ..$ : int(0) 
+  .. ..$ : int(0) 
+  .. ..$ : int(0) 
+  .. ..$ : int(0) 
+  .. ..$ : int 5
+  ..$ .params  :List of 8
+  .. ..$ : num [1:2] 0.985 0
+  .. ..$ : num [1:2] 1.11 0
+  .. ..$ : num [1:2] 1.58 0
+  .. ..$ : num [1:2] 1.03 0
+  .. ..$ : num [1:2] 1.04 0
+  .. ..$ : num [1:2] 1.33 0
+  .. ..$ : num [1:2] 1.14 0
+  .. ..$ : num [1:3] 1.087 0 0.998
+  ..and 31 methods, of which 17 are  possibly relevant:
+  ..  cov.mat, edge.count, err.var, fit, initialize, initialize#ParDAG, intercept, levels, levels#ParDAG, node.count, set.err.var, set.intercept, simulate, simulate#ParDAG, var.type, var.type#ParDAG, weight.mat
+NULL
