@@ -230,7 +230,7 @@ double ScoreGaussL0PenScatter::local(const uint vertex, const std::set<uint>& pa
   
   // Call R function for local score
   double res = Rcpp::as<double>((_rfunction[R_FCN_INDEX_LOCAL_SCORE])(vertex + 1, shiftParents));
-  std::cout << "C++ scatter local score: " << res << "\n";
+  //std::cout << "C++ scatter local score: " << res << "\n";
   return res;
 	// double a;
 	// 

@@ -18,7 +18,7 @@ create_im_dags <- function(num_sets) {
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
     #s2  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,1),5000,8),                       g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.2),5000,8),                       g = gGtrue)
     print(dim(set8$x))
     data_list[[i]] <- set8
     start_seed = start_seed + 2000
@@ -153,6 +153,8 @@ driver <- function() {
 #   str(images2.fit, max=2)
 #   as(as(images2.fit$essgraph,"graphNEL"),"Matrix")
 # }
+
+data(gmG)
 
 score2 <- new("GaussL0penObsScore", gmG8$x, lambda=2)
 
