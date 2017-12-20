@@ -18,7 +18,7 @@ create_im_dags <- function(num_sets) {
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
     #s2  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.5),5000,8),                       g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.1),5000,8),                       g = gGtrue)
     print(dim(set8$x))
     data_list[[i]] <- set8
     start_seed = start_seed + 2000
@@ -240,7 +240,7 @@ driver <- function() {
 }
 
 plot_driver <- function() {
-  num_sets <- 3
+  num_sets <- 50
   
   result_sets <- list()
   
@@ -255,8 +255,17 @@ plot_driver <- function() {
     
     
   }
-  print(result_sets[[1]])
+
   plot_error(result_sets)
+  
+  print(length(result_sets))
+  
+  for (k in 1:length(result_sets)) {
+    for (i in 1:length(result_sets[[k]])) {
+      plot_graph(result_sets[[k]]$results[[i]][[2]])
+    }
+  }
+  
   
 }
 
