@@ -151,7 +151,8 @@ export(trueCov,
        addBgKnowledge,
        adjustment,
        isValidGraph,
-       IMaGES)
+       IMaGES,
+       inEdgeList)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------

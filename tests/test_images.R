@@ -1,3 +1,5 @@
+library(imagestest)
+
 ## Load predefined data
 get_gmg <- function() {
   set.seed(40)
@@ -14,7 +16,7 @@ get_gmg <- function() {
 ## Define the score (BIC)
 #score <- new("GaussL0penObsScore", gmG8$x)#, lambda=2)
 
-create_im_dags <- function(num_sets) {
+create_im_dags <- function(num_sets, noise) {
   gmG8 <- get_gmg()
   start_seed <- 3.1415926
   data_list <- list()
@@ -28,7 +30,7 @@ create_im_dags <- function(num_sets) {
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
     #s2  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.1),5000,8),                       g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,noise),5000,8),                       g = gGtrue)
     print(dim(set8$x))
     data_list[[i]] <- set8
     start_seed = start_seed + 2000
@@ -111,6 +113,7 @@ run_im <- function(datasets) {
 ## Plot the estimated essential graph and the true DAG
 
 plot_graph <- function(fit) {
+  gmG8 <- get_gmg()
   if (require(Rgraphviz)) {
     par(mfrow=c(1,2))
     plot(fit, main = "Estimated CPDAG")
@@ -125,6 +128,7 @@ plot_graph <- function(fit) {
 
 find_error <- function(graph) {
   
+  gmG8 <- get_gmg()  
   true <- inEdgeList(gmG8$g)
   #print(true)
   #print(graph)
@@ -196,7 +200,7 @@ find_error <- function(graph) {
 #0 or 1 for each edge/direction
 
 
-plot_error <- function(results) {
+plot_error <- function(results, fname, num_sets) {
   inv_measures <- list()
   
   #print(paste("length: ", length(results)))
@@ -215,10 +219,12 @@ plot_error <- function(results) {
 
   print(inv_measures)
   
+  png(filename=fname)
   plot_measures <- unlist(inv_measures)
   
   plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
-  axis(1, at=1:5)
+  axis(1, at=1:num_sets)
+  dev.off()
 }
 
 driver <- function() {
@@ -251,8 +257,7 @@ driver <- function() {
   }
 }
 
-plot_driver <- function() {
-  num_sets <- 50
+plot_driver <- function(num_sets, noise, fname) {
   
   gmG8 <- get_gmg()
 
@@ -260,7 +265,7 @@ plot_driver <- function() {
   
   for (k in 1:num_sets) {
     
-    im_run_dags <- create_im_dags(k)
+    im_run_dags <- create_im_dags(k, noise)
     
     im_run_scores <- create_scores(im_run_dags)
     #print(scores == im_run_scores)
@@ -270,15 +275,15 @@ plot_driver <- function() {
     
   }
 
-  plot_error(result_sets)
+  plot_error(result_sets, fname, num_sets)
   
   print(length(result_sets))
   
-  for (k in 1:length(result_sets)) {
-    for (i in 1:length(result_sets[[k]])) {
-      plot_graph(result_sets[[k]]$results[[i]][[2]])
-    }
-  }
+  #for (k in 1:length(result_sets)) {
+  #  for (i in 1:length(result_sets[[k]])) {
+  #    plot_graph(result_sets[[k]]$results[[i]][[2]])
+  #  }
+  #}
   
   
 }
@@ -308,4 +313,6 @@ plot_driver <- function() {
 #   as(as(ges.fit$essgraph,"graphNEL"),"Matrix")
 # }
 
-#driver()
+plot_driver(50, 0.1, "../plot_noise_0.1.png")
+plot_driver(50, 1.0, "../plot_noise_1.0.png")
+
