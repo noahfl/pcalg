@@ -266,13 +266,12 @@ IMaGES <- setRefClass("IMaGES",
                           print("HERE?")
                         },
                         
-                        #TODO: address snowball effect for IMScore
                         IMScore = function() {
                           
                           #graphs <- .graphs
                           #penalty <- get('penalty', envir=globalenv())
                           penalty <<- penalty
-                          matrices <- get('matrices', envir=globalenv())
+                          #matrices <- get('matrices', envir=globalenv())
                           
                           #print(typeof(length(scores)))
                           m <- length(.graphs)

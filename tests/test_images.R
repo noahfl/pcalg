@@ -1,11 +1,21 @@
 ## Load predefined data
-data(gmG)
+get_gmg <- function() {
+  set.seed(40)
+  p <- 8
+  n <- 5000
+  ## true DAG:
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+  gGtrue <- randomDAG(p, prob = 0.3, V = vars)
+  gmG  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
+  gmG8 <- list(x = rmvDAG(n, gGtrue),                       g = gGtrue)
+  return(gmG8)
+}
 
 ## Define the score (BIC)
 #score <- new("GaussL0penObsScore", gmG8$x)#, lambda=2)
 
 create_im_dags <- function(num_sets) {
-  data(gmG)
+  gmG8 <- get_gmg()
   start_seed <- 3.1415926
   data_list <- list()
   #data_list[[1]] <- gmG8
@@ -214,6 +224,8 @@ plot_error <- function(results) {
 driver <- function() {
   num_sets <- 2
   
+  gmG8 <- get_gmg()
+  
   dags <- create_im_dags(num_sets)
   scores <- create_scores(dags)
   orig_fits <- run_originals(scores)
@@ -242,6 +254,8 @@ driver <- function() {
 plot_driver <- function() {
   num_sets <- 50
   
+  gmG8 <- get_gmg()
+
   result_sets <- list()
   
   for (k in 1:num_sets) {
