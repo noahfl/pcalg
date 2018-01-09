@@ -283,6 +283,27 @@ plot_driver <- function() {
   
 }
 
+autism_driver <- function() {
+  sapply(list.files(pattern="[.]R$", path="R/", full.names=TRUE), source);
+  
+  
+  filenames <- list.files("test/steve", pattern="autism*", full.names=TRUE)
+  matrices = list()
+  
+  #for (i in 1:3) {
+  for (i in 1:length(filenames)) {
+    matrices[[i]] <- as.matrix(read.table(filenames[[i]], skip=1))
+  }
+  
+  results = new("IMaGES", matrices = matrices, penalty=0)
+  
+  for (i in 1:length(results)) {
+    par(mfrow=c(1,2))
+    plot(results$results[[i]][[2]], main = "Estimated CPDAG")
+  }
+
+}
+
 # if (require(Rgraphviz)) {
 #   par(mfrow=c(1,2))
 #   plot(images2.fit[[2]], main = "Estimated CPDAG")
