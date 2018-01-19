@@ -222,7 +222,12 @@ plot_error <- function(results, fname, num_sets) {
   png(filename=fname)
   plot_measures <- unlist(inv_measures)
   
-  plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
+  dev.new(width=10, height=5)
+  #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
+  plot(plot_measures, type="o", col='blue', ylim=c(0,0.5), xlab='', ylab='')
+  title(xlab="Number of datasets")
+  title(ylab="Error")
+  axis(side = 1, at = at)
   axis(1, at=1:num_sets)
   dev.off()
 }
@@ -313,6 +318,6 @@ plot_driver <- function(num_sets, noise, fname) {
 #   as(as(ges.fit$essgraph,"graphNEL"),"Matrix")
 # }
 
-plot_driver(50, 0.1, "../plot_noise_0.1.png")
-plot_driver(50, 1.0, "../plot_noise_1.0.png")
+#plot_driver(50, 0.1, "../plot_noise_0.1.png")
+#plot_driver(50, 1.0, "../plot_noise_1.0.png")
 
