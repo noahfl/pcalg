@@ -295,8 +295,8 @@ IMaGES <- setRefClass("IMaGES",
                             # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
                             # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
                             
-                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=NULL))
-                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=NULL)
+                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag()))
+                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag())
                           }
                           
                           print(paste("n: ", n, " k: ", k, "length: ", length(.graphs), "sum: ", sum))
@@ -380,7 +380,7 @@ IMaGES$methods(
     imscore <<- IMScore()
     print("FINAL SCORES")
     for (i in 1:length(.graphs)) {
-      print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=imscore))
+      print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag()))
       #print(list(.graphs[[i]], .graphs[[i]]$repr()))
       results[[i]] <<- list(.graphs[[i]], .graphs[[i]]$repr())
     }

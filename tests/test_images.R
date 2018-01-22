@@ -228,8 +228,12 @@ autism_driver <- function() {
   
   #import data
   for (i in 1:length(filenames)) {
+  #for (i in 1:2) {
     #this might be causing the plotting issue but i'm not yet sure of a workaround
-    matrices[[i]] <- as.matrix(read.table(filenames[[i]], skip=1))
+    matrices[[i]] <- as.matrix(read.table(filenames[[i]]))#, skip=1))
+    #test1 <- as.matrix(read.table(filenames[[i]]))#, skip=1))
+    #test2 <- as.matrix(read.table(filenames[[i]]), skip=1)
+    
   }
   
   #run IMaGES on data
@@ -240,6 +244,18 @@ autism_driver <- function() {
     par(mfrow=c(1,2))
     plot(results$results[[i]][[2]], main = "Estimated CPDAG")
   }
+
+}
+
+
+convert <- function(from) {
+  edgeList <- lapply(from$.in.edges, function(v) from$.nodes[v])
+  names(edgeList) <- from$.nodes
+  result <- new("graphNEL",
+                nodes = from$.nodes,
+                edgeL = edgeList,
+                edgemode = "directed")
+  return(reverseEdgeDirections(result))
 
 }
 

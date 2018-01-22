@@ -488,8 +488,7 @@ setRefClass("Score",
         decomp = "logical",
         c.fcn = "character",
         pp.dat = "list",
-        .pardag.class = "character",
-        .imscore = "numeric"),
+        .pardag.class = "character"),
 
     validity = function(object) {
       ## Check if targets are valid (i.e., unique)
@@ -516,11 +515,9 @@ setRefClass("Score",
         initialize = function(
             targets = list(integer(0)),
             nodes = character(0),
-            .imscore = NULL,
             ...) {
           .nodes <<- nodes
           pp.dat$targets <<- .tidyTargets(length(nodes), targets)
-          #.imscore <<- imscore
           c.fcn <<- "none"
 
         },
@@ -578,18 +575,12 @@ setRefClass("Score",
 
         #' Calculates the global score of a DAG which is only specified
         #' by its list of in-edges
-        global.score.int = function(edges, .imscore, ...) {
-          if (!is.null(.imscore)) {
-            #print("at .imscore")
-            print(paste("imscore: ", .imscore, "\n"))
-            return(as.double(.imscore))
-          }
-          else {
+        global.score.int = function(edges, ...) {
 #          else if (c.fcn == "none") {
             ## Calculate score in R
-            sum(sapply(1:pp.dat$vertex.count,
-                    function(i) local.score(i, edges[[i]], ...)))
-          }
+          sum(sapply(1:pp.dat$vertex.count,
+                  function(i) local.score(i, edges[[i]], ...)))
+
 #          } else {
 #            ## Calculate score with the C++ library
 #            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "imagestest")
@@ -597,8 +588,8 @@ setRefClass("Score",
         },
 
         #' Calculates the global score of a DAG
-        global.score = function(dag, .imscore=.imscore, ...) {
-          global.score.int(dag$.in.edges, .imscore, ...)
+        global.score = function(dag,  ...) {
+          global.score.int(dag$.in.edges, ...)
         },
 
         #' Calculates a local model fit for a vertex and its parents
@@ -662,7 +653,6 @@ setRefClass("DataScore",
             targets = list(integer(0)),
             target.index = rep(as.integer(1), nrow(data)),
             nodes = colnames(data),
-            .imscore = NULL,
             ...) {
           ## Node names (stored in constructor of "Score"):
           ## if data has no column names, correct them
@@ -671,7 +661,7 @@ setRefClass("DataScore",
           }
           targetList <- .tidyTargets(ncol(data), targets, target.index)
           #.imscore <<- imscore
-          callSuper(targets = targetList$targets, nodes, .imscore = .imscore, ...)
+          callSuper(targets = targetList$targets, nodes, ...)
 
           ## Order by ascending target indices (necessary for certain scoring objects)
           if (is.unsorted(targetList$target.index)) {
@@ -707,7 +697,7 @@ setRefClass("DataScore",
           #.imscore <<- .imscore
           ## R function objects
           pp.dat$local.score <<- function(vertex, parents) local.score(vertex, parents)
-          pp.dat$global.score <<- function(edges) global.score(vertex, parents, .imscore)
+          pp.dat$global.score <<- function(edges) global.score(vertex, parents)
           pp.dat$local.fit <<- function(vertex, parents) local.fit(vertex, parents)
           pp.dat$global.fit <<- function(edges) global.fit(vertex, parents)
         }
@@ -753,7 +743,6 @@ setRefClass("GaussL0penIntScore",
             intercept = TRUE,
             format = c("raw", "scatter"),
             use.cpp = TRUE,
-            .imscore = NULL,
             ...) {
           ## Store supplied data in sorted form. Make sure data is a matrix for
           ## linear-Gaussian data
@@ -761,7 +750,7 @@ setRefClass("GaussL0penIntScore",
             print(data)
             data <- as.matrix(data)
           }
-          callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, .imscore = .imscore, ...)
+          callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, ...)
 
           ## Number of variables
           p <- ncol(data)
@@ -893,7 +882,7 @@ setRefClass("GaussL0penIntScore",
             print(paste("local IM: ", oldRet, "vs local score: ", result, "average: ", ret, "num data sets: ", get("numDatasets",envir=trueIM)))
             #return(ret)
           }
-          print(paste("Test var: ", get("score", envir=trueIM)))
+          #print(paste("Test var: ", get("score", envir=trueIM)))
           #print(paste("res: ", res, "lambda: ", pp.dat$lambda))
           return(ret)
 #          } else {
@@ -987,7 +976,6 @@ setRefClass("GaussL0penObsScore", contains = "GaussL0penIntScore",
               intercept = intercept,
               format = format,
               use.cpp = use.cpp,
-              .imscore = .imscore,
               ...)
           }
         )
