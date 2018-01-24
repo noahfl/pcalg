@@ -878,6 +878,7 @@ setRefClass("GaussL0penIntScore",
             oldRet <- ((get("score", envir=trueIM)/get("numDatasets",envir=trueIM))/pp.dat$vertex.count)
             
             ret <- (oldRet + result) / 2
+            #ret <- oldRet
             
             print(paste("local IM: ", oldRet, "vs local score: ", result, "average: ", ret, "num data sets: ", get("numDatasets",envir=trueIM)))
             #return(ret)
@@ -901,7 +902,7 @@ setRefClass("GaussL0penIntScore",
           validate.vertex(vertex)
           validate.parents(parents)
 
-          if (c.fcn == "none") {
+          #if (!c.fcn == "none") {
             ## Calculate score in R
             if (.format == "raw") {
               ## Calculate MLE from raw data matrix
@@ -947,10 +948,10 @@ setRefClass("GaussL0penIntScore",
             } else {
               return(c(sigma2/pp.dat$data.count[vertex], 0, beta))
             }
-          } else {
+          #} else {
             ## Calculate score with the C++ library
-            return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
-          } # IF c.fcn
+          #  return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
+          #} # IF c.fcn
         }
         )
     )

@@ -211,6 +211,10 @@ IMaGES <- setRefClass("IMaGES",
                           # }
                         },
                         
+                        mode = function(x) {
+                          ux <- unique(x)
+                          ux[which.max(tabulate(match(x, ux)))]
+                        },
                         
                         run = function() {
                           print("start of run")
@@ -234,28 +238,49 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           #}
                           
-                          for (i in 1:length(opt_phases)) {
-                            if (opt_phases[[i]] == 1) {
-                              opt_phases[[i]] <- 'GIES-F'
-                            }
-                            else if (opt_phases[[i]] == 2) {
-                              opt_phases[[i]] <- 'GIES-B'
-                            }
-                            else if (opt_phases[[i]] == 3) {
-                              opt_phases[[i]] <- 'GIES-T'
-                            }
-                            else if (opt_phases[[i]] == 0) {
-                              opt_phases[[i]] <- 'none'
-                            }
+                          opt <- mode(opt_phases)
+                          
+                          str_opt <- ''
+                          
+                          if (opt == 1) {
+                            str_opt <- 'GIES-F'
                           }
+                          else if (opt == 2) {
+                            str_opt <- 'GIES-B'
+                          }
+                          else if (opt == 3) {
+                            str_opt <- 'GIES-T'
+                          }
+                          else if (opt == 0) {
+                            str_opt <- 'none'
+                          }                          
                           
-                          print(paste("phases: ", opt_phases))
-                          opt = find_opt(opt_phases)
                           
-                          if (opt != "none") {
+                          
+                          # str_phases <- list()
+                          # for (i in 1:length(opt_phases)) {
+                          #   if (opt_phases[[i]] == 1) {
+                          #     str_phases[[i]] <- 'GIES-F'
+                          #   }
+                          #   else if (opt_phases[[i]] == 2) {
+                          #     str_phases[[i]] <- 'GIES-B'
+                          #   }
+                          #   else if (opt_phases[[i]] == 3) {
+                          #     str_phases[[i]] <- 'GIES-T'
+                          #   }
+                          #   else if (opt_phases[[i]] == 0) {
+                          #     str_phases[[i]] <- 'none'
+                          #   }
+                          # }
+                          # 
+                          # print(paste("phases: ", str_phases))
+                          # opt = find_opt(str_phases)
+                          
+                          if (!(str_opt == "none")) {
                             for (j in 1:length(.graphs)) {
+                              print(paste("opt_phase: ", opt))
                               #print(toString(j))
-                              run_phase(phase=opt, j)
+                              run_phase(phase=str_opt, j)
                               update_score()
                               
                             }
@@ -295,8 +320,8 @@ IMaGES <- setRefClass("IMaGES",
                             # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
                             # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
                             
-                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag()))
-                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag())
+                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr))
+                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr)
                           }
                           
                           print(paste("n: ", n, " k: ", k, "length: ", length(.graphs), "sum: ", sum))
@@ -380,7 +405,7 @@ IMaGES$methods(
     imscore <<- IMScore()
     print("FINAL SCORES")
     for (i in 1:length(.graphs)) {
-      print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag()))
+      print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr))
       #print(list(.graphs[[i]], .graphs[[i]]$repr()))
       results[[i]] <<- list(.graphs[[i]], .graphs[[i]]$repr())
     }
@@ -396,7 +421,9 @@ setRefClass("IMGraph",
               .nodes = "vector",
               .in.edges = "list",
               .targets = "list",
-              .score = "Score"
+              .score = "Score",
+              .current_repr = "list"
+              
             ),
             
             validity = function(object) {
@@ -437,7 +464,8 @@ setRefClass("IMGraph",
                 stopifnot(is.list(in.edges) && length(in.edges) == length(nodes))
                 # More error checking is done in validity check
                 .in.edges <<- in.edges
-                names(.in.edges) <<- NULL
+                .current.repr <<- new("GaussParDAG", nodes=.nodes, in.edges=.in.edges)
+                #names(.in.edges) <<- NULL
                 
                 ## Store targets
                 setTargets(targets)
@@ -550,10 +578,12 @@ setRefClass("IMGraph",
                 print("BEFORE")
                 print(.in.edges)
                 .in.edges <<- new.graph$in.edges
+                .current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
+                names(.in.edges) <<- .nodes
                 print("AFTER")
                 print(.in.edges)
                 
-                names(.in.edges) <<- .nodes
+                #names(.in.edges) <<- .nodes
                 
                 return(new.graph$steps == 1)
               },
