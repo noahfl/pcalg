@@ -282,13 +282,13 @@ IMaGES <- setRefClass("IMaGES",
                               #print(toString(j))
                               run_phase(phase=str_opt, j)
                               update_score()
-                              
+                              #return(TRUE)
                             }
                           }
-                          
-                          
-                          
-                          print("HERE?")
+                          # else {
+                          #   return(FALSE)
+                          # }
+  
                         },
                         
                         IMScore = function() {
@@ -391,8 +391,10 @@ IMaGES$methods(
     print("---------------")
     
     for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
-      #print("test")
-      run()      
+      # if (!run()) {
+      #   break
+      # }
+      run()
     }
     
     
@@ -649,7 +651,7 @@ setRefClass("IMGraph",
                 stopifnot(!is.null(score <- getScore()))
                 
                 result <- new("GaussParDAG", nodes =.nodes)
-                result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "imagestest")
+                result$.in.edges <- .current.repr$.in.edges
                 result$.params <- score$global.fit(result)
                 
                 return(result)

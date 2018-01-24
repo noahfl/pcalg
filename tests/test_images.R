@@ -147,7 +147,7 @@ plot_error <- function(results) {
 #driver for individual GES-like runs
 driver <- function() {
   #change to how many graphs you want
-  num_sets <- 2
+  num_sets <- 3
   
   gmG8 <- get_gmg()
   
