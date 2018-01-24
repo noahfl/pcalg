@@ -648,7 +648,7 @@ setRefClass("IMGraph",
               repr = function() {
                 stopifnot(!is.null(score <- getScore()))
                 
-                result <- score$create.dag()
+                result <- new("GaussParDAG", nodes =.nodes)
                 result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "imagestest")
                 result$.params <- score$global.fit(result)
                 
