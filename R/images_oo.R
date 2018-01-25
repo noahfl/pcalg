@@ -580,7 +580,7 @@ setRefClass("IMGraph",
                 print("BEFORE")
                 print(.in.edges)
                 .in.edges <<- new.graph$in.edges
-                .current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
+                .current_repr$.in.edges <<- new.graph$in.edges
                 names(.in.edges) <<- .nodes
                 print("AFTER")
                 print(.in.edges)
@@ -651,7 +651,7 @@ setRefClass("IMGraph",
                 stopifnot(!is.null(score <- getScore()))
                 
                 result <- new("GaussParDAG", nodes =.nodes)
-                result$.in.edges <- .current.repr$.in.edges
+                result$.in.edges <- .current_repr$.in.edges
                 result$.params <- score$global.fit(result)
                 
                 return(result)

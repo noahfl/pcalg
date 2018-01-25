@@ -173,7 +173,7 @@ driver <- function() {
   #create score objects
   im_run_scores <- create_scores(im_run_dags)
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0.5)
   
   #plot results
   for (i in 1:length(im_fits$results)) {

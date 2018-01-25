@@ -872,7 +872,7 @@ setRefClass("GaussL0penIntScore",
           if (!(get("isLocalIM", envir=trueIM))) {
             ret <- result
             #return(result)
-            print(paste("Test var: ", get("score", envir=trueIM)))
+            #print(paste("Test var: ", get("score", envir=trueIM)))
           }
           else {
             oldRet <- ((get("score", envir=trueIM)/get("numDatasets",envir=trueIM))/pp.dat$vertex.count)
@@ -880,7 +880,7 @@ setRefClass("GaussL0penIntScore",
             ret <- (oldRet + result) / 2
             #ret <- oldRet
             
-            print(paste("local IM: ", oldRet, "vs local score: ", result, "average: ", ret, "num data sets: ", get("numDatasets",envir=trueIM)))
+            #print(paste("local IM: ", oldRet, "vs local score: ", result, "average: ", ret, "num data sets: ", get("numDatasets",envir=trueIM)))
             #return(ret)
           }
           #print(paste("Test var: ", get("score", envir=trueIM)))
