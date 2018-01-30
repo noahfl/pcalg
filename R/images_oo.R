@@ -346,7 +346,7 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, scores = NULL, penalty = 1.5, imscore = NULL) {
+  initialize = function(matrices = NULL, scores = NULL, penalty = 2, imscore = NULL) {
     #images <-
     #print("initializing")
     #imscore = 0
@@ -389,6 +389,7 @@ IMaGES$methods(
     #imscore <<- IMScore()
     
     print("---------------")
+    
     
     for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
       # if (!run()) {
@@ -563,7 +564,7 @@ setRefClass("IMGraph",
                 #alg.name <- match.arg(alg.name)
                 print("calling GES")
                 new.graph <- .Call("causalInference",
-                                   .in.edges,
+                                   current_repr$.in.edges,
                                    score$pp.dat,
                                    alg.name,
                                    score$c.fcn,
