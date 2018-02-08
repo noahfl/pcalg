@@ -581,7 +581,7 @@ setRefClass("IMGraph",
                 print("BEFORE")
                 print(.in.edges)
                 .in.edges <<- new.graph$in.edges
-                .current_repr$.in.edges <<- new.graph$in.edges
+                .current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 names(.in.edges) <<- .nodes
                 print("AFTER")
                 print(.in.edges)
