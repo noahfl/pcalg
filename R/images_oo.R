@@ -281,6 +281,8 @@ IMaGES <- setRefClass("IMaGES",
                               print(paste("opt_phase: ", opt))
                               #print(toString(j))
                               run_phase(phase=str_opt, j)
+                              #TODO: run, get score, roll back for each
+                              #then implement one with best score update for global graph
                               update_score()
                               #return(TRUE)
                             }
@@ -425,7 +427,9 @@ setRefClass("IMGraph",
               .in.edges = "list",
               .targets = "list",
               .score = "Score",
-              .current_repr = "list"
+              .current_repr = "list",
+              .old.edges = "list",
+              .edge.change = "list"
               
             ),
             
@@ -563,7 +567,7 @@ setRefClass("IMGraph",
                 #                   turning = "GIES-T")
                 #alg.name <- match.arg(alg.name)
                 print("calling GES")
-                new.graph <- .Call("causalInference",
+                new.graph <- .Call("causalInferenceEdge",
                                    current_repr$.in.edges,
                                    score$pp.dat,
                                    alg.name,
@@ -580,9 +584,14 @@ setRefClass("IMGraph",
                 
                 print("BEFORE")
                 print(.in.edges)
+                
+                
+                .old.edges <<- .in.edges
                 .in.edges <<- new.graph$in.edges
+                .saved.edges <<- .in.edges
                 .current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 names(.in.edges) <<- .nodes
+                .edge.change <<- new.graph$edge.change
                 print("AFTER")
                 print(.in.edges)
                 
@@ -591,7 +600,13 @@ setRefClass("IMGraph",
                 return(new.graph$steps == 1)
               },
               
+              undo.step = function() {
+                .in.edges <<- .old.edges
+              }
               
+              redo.step = function() {
+                .in.edges <<- .saved.edges
+              }
               
               #' greedy.search = function(direction = c("forward", "backward", "turning")) {
               #'   stopifnot(!is.null(score <- getScore()))
@@ -675,3 +690,4 @@ trueIM <- new.env()
 assign("score", 100, env=trueIM)
 assign("isLocalIM", FALSE, env=trueIM)
 assign("numDatasets", 1, env=trueIM)
+assign("global.edges", list(), env=trueIM)

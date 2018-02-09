@@ -1392,6 +1392,171 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 		return false;
 }
 
+boost::tuple<uint, uint, std::string> EssentialGraph::greedyForwardEdge(const ForwardAdaptiveFlag adaptive)
+{
+  uint v_opt = 0;
+  ArrowChangeCmp comp;
+  ArrowChange insertion, optInsertion;
+  
+  // For DEBUGGING purposes: print phase
+  dout.level(1) << "== starting forward phase ("
+                << (adaptive ? "" : "not ") << "adaptive)...\n";
+  
+  std::cout << "== starting forward phase ("
+            << (adaptive ? "" : "not ") << "adaptive)...\n";
+  
+  // Initialize optimal score gain
+  optInsertion.score = _minScoreDiff;
+  
+  // If caching is disabled calculate the score differences for all possible edges
+  if (!_doCaching) {
+    for (uint v = 0; v < getVertexCount(); v++) {
+      // Calculate optimal arrow insertion for given target vertex v
+      insertion = getOptimalArrowInsertion(v);
+      
+      // Look for optimal score
+      if (insertion.score > optInsertion.score) {
+        
+        optInsertion = insertion;
+        v_opt = v;
+      }
+    }
+  }
+  
+  // If caching is enabled, search the cache for the best score
+  dout.level(3) << "vertex count: " << getVertexCount() << "\n";
+  if (_doCaching) {
+    // If score has to be initialized (current phase is not forward), do it
+    if (_actualPhase != SD_FORWARD)
+      for (uint v = 0; v < getVertexCount(); v++)
+        _scoreCache[v] = getOptimalArrowInsertion(v);
+    
+    // Find optimal arrow insertion from cache
+    std::vector<ArrowChange>::iterator si = std::max_element(_scoreCache.begin(), _scoreCache.end(), comp);
+    v_opt = std::distance(_scoreCache.begin(), si);
+    optInsertion = *si;
+    _actualPhase = SD_FORWARD;
+  }
+  
+  // If the score can be augmented, do it
+  if (!check_interrupt() && optInsertion.score > _minScoreDiff) {
+    // For DEBUGGING purposes: print inserted arrow
+    dout.level(1) << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
+                  << optInsertion.clique << ", S = " << optInsertion.score << "\n";
+    
+    std::cout << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
+              << optInsertion.clique << ", S = " << optInsertion.score << "\n";
+    
+    uint u_opt = optInsertion.source;
+    EdgeOperationLogger edgeLogger;
+    if (_doCaching) {
+      addLogger(&edgeLogger);
+    }
+    insert(u_opt, v_opt, optInsertion.clique);
+    
+    // Adapt fixed gaps if requested (cf. "ARGES")
+    if (adaptive == VSTRUCTURES && !hasEdge(v_opt, u_opt)) {
+      std::set<uint> sources = set_difference(getParents(v_opt), getAdjacent(u_opt));
+      sources.erase(u_opt);
+      for (std::set<uint>::iterator si = sources.begin(); si != sources.end(); ++si) {
+        setFixedGap(*si, u_opt, false);
+        setFixedGap(u_opt, *si, false);
+      }
+    } // IF VSTRUCTURES
+    else if (adaptive == TRIPLES) {
+      // Adjacent sets of u_opt and v_opt
+      std::vector< std::set<uint> > adjacentSets(2);
+      adjacentSets[0] = getAdjacent(u_opt);
+      adjacentSets[1] = getAdjacent(v_opt);
+      std::vector<uint> edgeVertices(2);
+      edgeVertices[0] = u_opt;
+      edgeVertices[1] = v_opt;
+      
+      // Vertices adjacent to u, but not to v (without v itself) (and vice versa)
+      // build new unshielded triples
+      std::set<uint> triples;
+      for (uint j = 0; j <= 1; j++) {
+        triples = set_difference(adjacentSets[j % 2], adjacentSets[(j + 1) % 2]);
+        triples.erase(edgeVertices[(j + 1) % 2]);
+        for (std::set<uint>::iterator si = triples.begin(); si != triples.end(); ++si) {
+          setFixedGap(*si, edgeVertices[(j + 1) % 2], false);
+          setFixedGap(edgeVertices[(j + 1) % 2], *si, false);
+        } // FOR si
+      } // FOR j
+    } // IF TRIPLES
+    
+    // If caching is enabled, recalculate the optimal arrow insertions where
+    // necessary
+    if (_doCaching) {
+      std::set<uint> recalc, recalcAnt;
+      
+      // Genereate set of vertices whose anterior set is the set of vertices
+      // whose cache has to be refreshed:
+      // u, if there was no path from u to v before
+      // TODO check conditions!!!
+      // if (!oldGraph.existsPath(u, v))
+      recalcAnt.insert(u_opt);
+      recalc.insert(u_opt);
+      // v, if the arrow was undirected and there was no path from v to u before
+      // TODO check conditions!!
+      // if (hasEdge(v, u) && !oldGraph.existsPath(v, u))
+      if (hasEdge(v_opt, u_opt))
+        recalcAnt.insert(v_opt);
+      recalc.insert(v_opt);
+      // the target of any newly directed edge
+      for (std::set<Edge, EdgeCmp>::iterator ei = edgeLogger.removedEdges().begin();
+           ei != edgeLogger.removedEdges().end(); ++ei) {
+        dout.level(3) << "New directed edge: (" << ei-> source << ", " << ei->target << ")\n";
+        recalcAnt.insert(ei->source);
+        recalc.insert(ei->target);
+      }
+      // the source of any newly undirected edge
+      for (std::set<Edge, EdgeCmp>::iterator ei = edgeLogger.addedEdges().begin();
+           ei != edgeLogger.addedEdges().end(); ++ei) {
+        // The newly inserted arrow is not a newly undirected one
+        // Thanks to Marco Eigenmann for reported a bug here.
+        if (ei->source != u_opt || ei->target != v_opt) {
+          dout.level(3) << "New undirected edge: (" << ei-> source << ", " << ei->target << ")\n";
+          recalcAnt.insert(ei->target);
+          recalc.insert(ei->source);
+        }
+      }
+      
+      // Calculate anterior set of that candidate set, and add vertices that
+      // have to be recalculated without the complete anterior set
+      boost::dynamic_bitset<> refreshCache(getVertexCount());
+      refreshCache = getAnteriorSet(recalcAnt);
+      for (std::set<uint>::iterator si = recalc.begin(); si != recalc.end(); ++si)
+        refreshCache.set(*si);
+      
+      // If v or u have reached the maximum degree, recalculate the optimal
+      // arrow insertion for all vertices for which an insertion with new
+      // parent u or v is proposed by the cache
+      if (getDegree(u_opt) >= _maxVertexDegree[u_opt])
+        for (int a = 0; a < getVertexCount(); ++a)
+          if (_scoreCache[a].source == u_opt)
+            refreshCache.set(a);
+          if (getDegree(v_opt) >= _maxVertexDegree[v_opt])
+            for (int a = 0; a < getVertexCount(); ++a)
+              if (_scoreCache[a].source == v_opt)
+                refreshCache.set(a);
+              
+              // Refresh cache: recalculate arrow insertions
+              for (int a = refreshCache.find_first(); a < getVertexCount(); a = refreshCache.find_next(a))
+                _scoreCache[a] = getOptimalArrowInsertion(a);
+              
+              // Unregister logger
+              removeLogger(&edgeLogger);
+              
+              std::cout << "Done with greedyForward()";
+    }
+    
+    return boost::tuple<uint, uint, std::string>(u_opt, v_opt, "GIES-F");
+  }
+  else
+    return boost::tuple<uint, uint, std::string>(0, 0, "GIES-F");
+}
+
 bool EssentialGraph::greedyBackward()
 {
 	uint v_opt = 0;
@@ -1436,6 +1601,52 @@ bool EssentialGraph::greedyBackward()
 	}
 	else
 		return false;
+}
+
+boost::tuple<uint, uint, std::string> EssentialGraph::greedyBackwardEdge()
+{
+  uint v_opt = 0;
+  ArrowChange deletion, optDeletion;
+  
+  // For DEBUGGING purposes: print phase
+  dout.level(1) << "== starting backward phase...\n" ;
+  
+  std::cout << "== starting backward phase...\n" ;
+  
+  // Initialize optimal score gain
+  optDeletion.score = _minScoreDiff;
+  
+  // TODO Allow caching for backward phase. At the moment, assumes no caching.
+  for (uint v = 0; v < getVertexCount(); v++) {
+    // Calculate optimal arrow insertion for given target vertex v
+    deletion = getOptimalArrowDeletion(v);
+    
+    // Look for optimal score
+    if (deletion.score > optDeletion.score) {
+      optDeletion = deletion;
+      v_opt = v;
+    }
+  }
+  
+  // If caching is enabled, store current phase...
+  // TODO: Change that to admit actual caching also in the backward phase!!!
+  if (_doCaching)
+    _actualPhase = SD_BACKWARD;
+  
+  // If the score can be augmented, do it
+  if (!check_interrupt() && optDeletion.score > _minScoreDiff) {
+    // For DEBUGGING purposes
+    dout.level(1) << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
+                  << optDeletion.clique << ", S = " << optDeletion.score << "\n";
+    
+    std::cout << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
+              << optDeletion.clique << ", S = " << optDeletion.score << "\n";
+    remove(optDeletion.source, v_opt, optDeletion.clique);
+    //getAdjacencyMatrix().print("A = ");
+    return boost::tuple<uint, uint, std::string>(optDeletion.source, v_opt, "GIES-B");
+  }
+  else
+    return boost::tuple<uint, uint, std::string>(0, 0, "GIES-B");
 }
 
 bool EssentialGraph::greedyTurn()
@@ -1484,6 +1695,52 @@ bool EssentialGraph::greedyTurn()
 		return false;
 }
 
+boost::tuple<uint, uint, std::string> EssentialGraph::greedyTurnEdge()
+{
+  uint v_opt = 0;
+  ArrowChange turning, optTurning;
+  
+  // For DEBUGGING purposes: print phase
+  dout.level(1) << "== starting turning phase...\n" ;
+  std::cout << "== starting turning phase...\n" ;
+  
+  // Initialize optimal score gain
+  optTurning.score = _minScoreDiff;
+  
+  // TODO Allow caching for turning phase. At the moment, assumes no caching.
+  for (uint v = 0; v < getVertexCount(); v++) {
+    // Calculate optimal arrow insertion for given target vertex v
+    turning = getOptimalArrowTurning(v);
+    
+    // Look for optimal score
+    if (turning.score > optTurning.score) {
+      optTurning = turning;
+      v_opt = v;
+    }
+  }
+  
+  // If caching is enabled, store current phase...
+  // TODO: Change that to admit actual caching also in the turning phase!!!
+  if (_doCaching)
+    _actualPhase = SD_TURNING;
+  
+  // Turn the highest-scoring edge
+  // If the score can be augmented, do it
+  if (!check_interrupt() && optTurning.score > _minScoreDiff) {
+    // For DEBUGGING purposes
+    dout.level(1) << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
+                  << optTurning.clique << ", S = " << optTurning.score << "\n";
+    
+    std::cout << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
+              << optTurning.clique << ", S = " << optTurning.score << "\n";
+    turn(optTurning.source, v_opt, optTurning.clique);
+    //getAdjacencyMatrix().print("A = ");
+    return boost::tuple<uint, uint, std::string>(optTurning.source, v_opt, "GIES-T");
+  }
+  else
+    return boost::tuple<uint, uint, std::string>(0, 0, "GIES-T");
+}
+
 bool EssentialGraph::greedyStepDir(const step_dir direction, const ForwardAdaptiveFlag adaptive)
 {
 	switch (direction) {
@@ -1500,6 +1757,7 @@ bool EssentialGraph::greedyStepDir(const step_dir direction, const ForwardAdapti
 		return false;
 	} // SWITCH direction
 }
+
 
 
 

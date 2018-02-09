@@ -14,6 +14,7 @@ extern SEXP localScore(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP optimalTarget(SEXP, SEXP);
 extern SEXP representative(SEXP);
 extern SEXP greedyStepRFunc(SEXP);
+extern SEXP causalInferenceEdge(SEXP, SEXP, SEXP, SEXP, SEXP);
 //extern SEXP imScore(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
@@ -27,6 +28,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"optimalTarget",       (DL_FUNC) &optimalTarget,       2},
     {"representative",      (DL_FUNC) &representative,      1},
     {"greedyStepRFunc",     (DL_FUNC) &greedyStepRFunc,     1},
+    {"causalInferenceEdge", (DL_FUNC) &causalInferenceEdge, 5},
     {NULL, NULL, 0}
 };
 

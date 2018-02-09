@@ -15,6 +15,7 @@
 #include <utility>
 #include <list>
 #include <deque>
+#include <boost/tuple/tuple.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/dynamic_bitset.hpp>
 
@@ -717,6 +718,24 @@ public:
 	 * Does one turning step of the greedy interventional equivalence search
 	 */
 	bool greedyTurn();
+	
+	/**
+	 * Does one forward step of the greedy interventional equivalence search.
+	 *
+	 * @param  adaptive: indicates whether set of allowed edges should be
+	 * adaptively enlarged according to AGES
+	 */
+	boost::tuple<uint, uint, std::string> greedyForwardEdge(const ForwardAdaptiveFlag adaptive = NONE);
+	
+	/**
+	 * Does one backward step of the greedy interventional equivalence search
+	 */
+	boost::tuple<uint, uint, std::string> greedyBackwardEdge();
+	
+	/**
+	 * Does one turning step of the greedy interventional equivalence search
+	 */
+	boost::tuple<uint, uint, std::string> greedyTurnEdge();
 
 	/**
 	 * Wrapper function to the greedy... functions; first argument indicates requested
