@@ -275,7 +275,7 @@ IMaGES <- setRefClass("IMaGES",
                           # 
                           # print(paste("phases: ", str_phases))
                           # opt = find_opt(str_phases)
-                          
+                          temp.scores <- vector()
                           if (!(str_opt == "none")) {
                             for (j in 1:length(.graphs)) {
                               print(paste("opt_phase: ", opt))
@@ -283,7 +283,20 @@ IMaGES <- setRefClass("IMaGES",
                               run_phase(phase=str_opt, j)
                               #TODO: run, get score, roll back for each
                               #then implement one with best score update for global graph
-                              update_score()
+                              temp.scores[[j]] <- IMScore()
+                              .graphs[[j]]$undo.step()
+                          
+                          best.graph.index <- which(temp.scores == max(temp.scores))
+                          
+                          #re-enable all steps after seeing which best impacts IMScore
+                          for (j in 1:length(.graphs)) {
+                            .graphs[[j]]$redo.step()
+                          }
+                          #update IMScore with all changes
+                          update_score()
+                          
+                          update.global(.graphs[[best.graph.index]]$.edge.change)
+                              
                               #return(TRUE)
                             }
                           }
@@ -292,6 +305,37 @@ IMaGES <- setRefClass("IMaGES",
                           # }
   
                         },
+                        
+                        insert.global = function(src, dst) {
+                          insert <- src
+                          
+                          #find index where edge should be inserted
+                          insert.point <- which(order(c(insert, trueIM$global.edges[[dst]]))==1)
+                          #insert the edge into the edgelist for that vertex
+                          trueIM$global.edges[[dst]] <- append(trueIM$global.edges[[dst]], insert, insert.point - 1)
+                        },
+                        
+                        remove.global = function(src, dst) {
+                          
+                        }
+                        
+                        turn.global = function(src, dst) {
+                          
+                        }
+                        
+                        update.global = function(edge.change) {
+                          
+                        },
+                        
+                        initialize.global = function() {
+                          edges <- list()
+                          
+                          for (i in 1:ncol(.graphs[[1]]$.score$pp.dat$data)) {
+                            edges[[i]] <- vector()
+                          }
+                          
+                          assign("global.edges", edges, env=trueIM)
+                        }
                         
                         IMScore = function() {
                           
