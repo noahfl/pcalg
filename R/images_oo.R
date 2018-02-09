@@ -306,6 +306,7 @@ IMaGES <- setRefClass("IMaGES",
   
                         },
                         
+                        #insert edge into global graph, where dst contains the list of edges going towards it
                         insert.global = function(src, dst) {
                           insert <- src
                           
@@ -315,16 +316,33 @@ IMaGES <- setRefClass("IMaGES",
                           trueIM$global.edges[[dst]] <- append(trueIM$global.edges[[dst]], insert, insert.point - 1)
                         },
                         
+                        #remove edge from global graph, where *dst* contains the list of edges going towards it
                         remove.global = function(src, dst) {
-                          
-                        }
+                          #remove edge by reassigning edge list to itself, where none of the values are no longer *src*
+                          trueIM$global.edges[[dst]] <- trueIM$global.edges[[dst]][[trueIM$global.edges[[dst]] != src]]
+                        },
                         
+                        #perform swap on *src* and *dst* to imitate turning method
                         turn.global = function(src, dst) {
-                          
-                        }
+                          remove.global(src, dst)
+                          insert.global(dst,src)
+                        },
                         
+                        #handles updating of global graph. calls insert.global, remove.global,
+                        #or turn.global depending on what the edge change specifies
                         update.global = function(edge.change) {
-                          
+                          if (edge.change[[3]] == 'GIES-F') {
+                            #insert
+                            insert.global(edge.change[[1]], edge.change[[2]])
+                          }
+                          else if (edge.change[[3]] == 'GIES-B') {
+                            #remove
+                            remove.global(edge.change[[1]], edge.change[[2]])
+                          }
+                          else if (edge.change[[3]] == 'GIES-T') {
+                            #turn
+                            turn.global(edge.change[[1]], edge.change[[2]])
+                          }
                         },
                         
                         initialize.global = function() {
@@ -335,7 +353,7 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           
                           assign("global.edges", edges, env=trueIM)
-                        }
+                        },
                         
                         IMScore = function() {
                           
@@ -366,8 +384,9 @@ IMaGES <- setRefClass("IMaGES",
                             # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
                             # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
                             
-                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr))
-                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr)
+                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.in.edges))
+                            #sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr)
+                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.in.edges)
                           }
                           
                           print(paste("n: ", n, " k: ", k, "length: ", length(.graphs), "sum: ", sum))
@@ -449,17 +468,17 @@ IMaGES$methods(
     
     #imscore <<- IMScore()
     
-    results <<- list()
+    results <<- trueIM$global.edges
     
-    imscore <<- IMScore()
-    print("FINAL SCORES")
-    for (i in 1:length(.graphs)) {
-      print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr))
+    #imscore <<- IMScore()
+    #print("FINAL SCORES")
+    #for (i in 1:length(.graphs)) {
+      #print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr))
       #print(list(.graphs[[i]], .graphs[[i]]$repr()))
-      results[[i]] <<- list(.graphs[[i]], .graphs[[i]]$repr())
-    }
+      #results[[i]] <<- list(.graphs[[i]], .graphs[[i]]$repr())
+    #}
     
-    results <<- results
+    #results <<- results
     
   }
 )
@@ -471,7 +490,7 @@ setRefClass("IMGraph",
               .in.edges = "list",
               .targets = "list",
               .score = "Score",
-              .current_repr = "list",
+              #.current_repr = "list",
               .old.edges = "list",
               .edge.change = "list"
               
@@ -612,7 +631,8 @@ setRefClass("IMGraph",
                 #alg.name <- match.arg(alg.name)
                 print("calling GES")
                 new.graph <- .Call("causalInferenceEdge",
-                                   current_repr$.in.edges,
+                                   #.current_repr$.in.edges,
+                                   .in.edges,
                                    score$pp.dat,
                                    alg.name,
                                    score$c.fcn,
@@ -633,7 +653,7 @@ setRefClass("IMGraph",
                 .old.edges <<- .in.edges
                 .in.edges <<- new.graph$in.edges
                 .saved.edges <<- .in.edges
-                .current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
+                #.current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 names(.in.edges) <<- .nodes
                 .edge.change <<- new.graph$edge.change
                 print("AFTER")
@@ -646,11 +666,11 @@ setRefClass("IMGraph",
               
               undo.step = function() {
                 .in.edges <<- .old.edges
-              }
+              },
               
               redo.step = function() {
                 .in.edges <<- .saved.edges
-              }
+              },
               
               #' greedy.search = function(direction = c("forward", "backward", "turning")) {
               #'   stopifnot(!is.null(score <- getScore()))
@@ -711,7 +731,8 @@ setRefClass("IMGraph",
                 stopifnot(!is.null(score <- getScore()))
                 
                 result <- new("GaussParDAG", nodes =.nodes)
-                result$.in.edges <- .current_repr$.in.edges
+                # result$.in.edges <- .current_repr$.in.edges
+                result$.in.edges <- .in.edges
                 result$.params <- score$global.fit(result)
                 
                 return(result)

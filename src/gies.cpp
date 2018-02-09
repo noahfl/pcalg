@@ -570,7 +570,7 @@ RcppExport SEXP causalInferenceEdge(
       stepNames.push_back("turning1");
     }
   }
-  
+  std::cout << "Edge change: " << edgeChange.get<0>() << ", " << edgeChange.get<1>() << ", " << edgeChange.get<2>() << "\n";
   // // Single one or several steps of GIES into either direction
   // else if (algName == "GIES-STEP") {
   //   dout.level(1) << "Performing " << algName << "...\n";
@@ -642,7 +642,7 @@ RcppExport SEXP causalInferenceEdge(
   // }
   
   // Other algorithm: throw an error
-  else throw std::runtime_error(algName + ": invalid algorithm name");
+  //else throw std::runtime_error(algName + ": invalid algorithm name");
   
   // Return new list of in-edges and steps
   delete score;
