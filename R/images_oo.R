@@ -491,10 +491,10 @@ IMaGES$methods(
     print("---------------")
     
     #imscore <<- IMScore()
-    results <- list()
+    results <<- list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes)
     
-    results$.in.edges <- trueIM$global.edges
-    results$.nodes <- .graphs[[1]]$.nodes
+    #results$.in.edges <- trueIM$global.edges
+    #results$.nodes <- .graphs[[1]]$.nodes
     return(results)
     
     #imscore <<- IMScore()

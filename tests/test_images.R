@@ -174,7 +174,7 @@ driver <- function() {
   
   #plot in.edges for each graph
   for (i in 1:length(orig_fits)) {
-    plot_graph(orig_fits[[i]][[1]][[2]])
+    plot_graph(orig_fits[[i]])
   }
   
   #now do the same thing for IMaGES
