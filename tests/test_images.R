@@ -211,7 +211,7 @@ driver_prob <- function() {
   #run IMaGES
   im_fits <- new("IMaGES", scores = im_run_scores, penalty=0)
   
-  plot(im_fits$results)
+  plot_graph(im_fits$results)
   
   #plot results
   # for (i in 1:length(im_fits$results)) {

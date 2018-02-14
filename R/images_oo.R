@@ -491,8 +491,11 @@ IMaGES$methods(
     print("---------------")
     
     #imscore <<- IMScore()
+    results <- list()
     
-    results <<- trueIM$global.edges
+    results$.in.edges <- trueIM$global.edges
+    results$.nodes <- .graphs[[1]]$.nodes
+    return(results)
     
     #imscore <<- IMScore()
     #print("FINAL SCORES")
