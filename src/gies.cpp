@@ -649,14 +649,20 @@ RcppExport SEXP causalInferenceEdge(
   Rcpp::IntegerVector namedSteps(steps.begin(), steps.end());
   namedSteps.names() = stepNames;
   
+  Rcpp::List edgeEdit = Rcpp::List::create(
+    Rcpp::Named("src") = edgeChange.get<0>() + 1,
+    Rcpp::Named("dst") = edgeChange.get<1>() + 1,
+    Rcpp::Named("alg") = edgeChange.get<2>()
+  );
+  
   // TODO "interrupt" zurückgeben, falls Ausführung unterbrochen wurde. Problem:
   // check_interrupt() scheint nur einmal true zurückzugeben...
   
   //TODO: convert to Rcpp::IntegerVector for edges and return step as Named string
   return Rcpp::List::create(
     Rcpp::Named("in.edges") = wrapGraph(graph),
-    Rcpp::Named("steps") = namedSteps);
-    Rcpp::Named("edge.change") = edgeChange;
+    Rcpp::Named("steps") = namedSteps,
+    Rcpp::Named("edge.change") = edgeEdit);
   
   END_RCPP
 }

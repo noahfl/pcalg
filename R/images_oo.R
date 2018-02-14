@@ -287,6 +287,8 @@ IMaGES <- setRefClass("IMaGES",
                               .graphs[[j]]$undo.step()
                           
                           best.graph.index <- which(temp.scores == max(temp.scores))
+                          print(paste("Best index: ", best.graph.index))
+                          print(best.graph.index)
                           
                           #re-enable all steps after seeing which best impacts IMScore
                           for (j in 1:length(.graphs)) {
@@ -295,7 +297,9 @@ IMaGES <- setRefClass("IMaGES",
                           #update IMScore with all changes
                           update_score()
                           
-                          update.global(.graphs[[best.graph.index]]$.edge.change)
+                          #just use first index of best.graph.index for now
+                          #TODO: find smarter way to do this
+                          update.global(.graphs[[best.graph.index[[1]]]]$.edge.change)
                               
                               #return(TRUE)
                             }
@@ -309,7 +313,8 @@ IMaGES <- setRefClass("IMaGES",
                         #insert edge into global graph, where dst contains the list of edges going towards it
                         insert.global = function(src, dst) {
                           insert <- src
-                          
+                          print(paste("dst: ", dst))
+                          print(trueIM$global.edges)
                           #find index where edge should be inserted
                           insert.point <- which(order(c(insert, trueIM$global.edges[[dst]]))==1)
                           #insert the edge into the edgelist for that vertex
@@ -318,7 +323,7 @@ IMaGES <- setRefClass("IMaGES",
                         
                         #remove edge from global graph, where *dst* contains the list of edges going towards it
                         remove.global = function(src, dst) {
-                          #remove edge by reassigning edge list to itself, where none of the values are no longer *src*
+                          #remove edge by reassigning edge list to itself, where none of the values are *src*
                           trueIM$global.edges[[dst]] <- trueIM$global.edges[[dst]][[trueIM$global.edges[[dst]] != src]]
                         },
                         
@@ -328,20 +333,37 @@ IMaGES <- setRefClass("IMaGES",
                           insert.global(dst,src)
                         },
                         
+                        edge.exists = function(src, dst) {
+                            return(src %in% trueIM$global.edges[[dst]])
+                        },
+                        
                         #handles updating of global graph. calls insert.global, remove.global,
                         #or turn.global depending on what the edge change specifies
                         update.global = function(edge.change) {
-                          if (edge.change[[3]] == 'GIES-F') {
+                          src <- edge.change[[1]]
+                          dst <- edge.change[[2]]
+                          dir <- edge.change[[3]]
+                          if (dir == 'GIES-F') {
                             #insert
-                            insert.global(edge.change[[1]], edge.change[[2]])
+                            if (!(edge.exists(src,dst))) {
+                              print("Inserting edge")
+                              insert.global(src, dst)
+                            }
                           }
-                          else if (edge.change[[3]] == 'GIES-B') {
+                          else if (dir == 'GIES-B') {
                             #remove
-                            remove.global(edge.change[[1]], edge.change[[2]])
+                            if (edge.exists(src,dst)) {
+                              print("Removing edge")
+                              remove.global(src, dst)  
+                            }
                           }
-                          else if (edge.change[[3]] == 'GIES-T') {
-                            #turn
-                            turn.global(edge.change[[1]], edge.change[[2]])
+                          else if (dir == 'GIES-T') {
+                            
+                            if (edge.exists(src,dst)) {
+                              print("Turning edge")
+                              #turn
+                              turn.global(src, dst)
+                            }
                           }
                         },
                         
@@ -449,6 +471,8 @@ IMaGES$methods(
     }
     
     .graphs <<- graphs
+    
+    initialize.global()
     
     #imscore <<- IMScore()
     #imscore <<- IMScore()
@@ -646,8 +670,8 @@ setRefClass("IMGraph",
                 #   names(.in.edges) <<- .nodes
                 # }
                 
-                print("BEFORE")
-                print(.in.edges)
+                #print("BEFORE")
+                #print(.in.edges)
                 
                 
                 .old.edges <<- .in.edges
@@ -655,9 +679,9 @@ setRefClass("IMGraph",
                 .saved.edges <<- .in.edges
                 #.current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 names(.in.edges) <<- .nodes
-                .edge.change <<- new.graph$edge.change
-                print("AFTER")
-                print(.in.edges)
+                .edge.change <<- list(new.graph$edge.change$src, new.graph$edge.change$dst, new.graph$edge.change$alg)
+                #print("AFTER")
+                #print(.in.edges)
                 
                 #names(.in.edges) <<- .nodes
                 

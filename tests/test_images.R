@@ -209,12 +209,14 @@ driver_prob <- function() {
   #create score objects
   im_run_scores <- create_scores(list(dataset1, dataset2))
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=5)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0)
+  
+  plot(im_fits$results)
   
   #plot results
-  for (i in 1:length(im_fits$results)) {
-    plot_graph(im_fits$results[[i]][[2]])
-  }
+  # for (i in 1:length(im_fits$results)) {
+  #   plot_graph(im_fits$results[[i]][[2]])
+  # }
 }
 
 #driver for calculation of errors across runs of increasing size
