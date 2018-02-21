@@ -428,7 +428,40 @@ IMaGES <- setRefClass("IMaGES",
                           print("IMSCORE:")
                           print(imscore)
                           return(imscore)
+                        },
+                        
+                        convert = function(from) {
+                          
+                          edgeList <- lapply(from$.in.edges, function(v) from$.nodes[v])
+                          names(edgeList) <- from$.nodes
+                          result <- new("graphNEL",
+                                        nodes = from$.nodes,
+                                        edgeL = edgeList,
+                                        edgemode = "directed")
+                          return(reverseEdgeDirections(result))
+                          
+                          #edges<-IMtest$results$.in.edges
+                        },
+                        
+                        #does structural equation modeling on graphNEL
+                        #object (needs dataset)
+                        apply.sem = function(converted, dataset) {
+                          #print("made it here")
+                          graph.nodes <- igraph.from.graphNEL(converted)
+                          edge.list <- get.edgelist(graph.nodes)
+                          #print(edge.list)
+                          model <- paste(edge.list[,1], "~", edge.list[,2])
+                          #print(model)
+                          fit <- sem(model, data=data.frame(dataset))
+                          estimate <- partable(fit)$est
+                          estimate <- round(estimate,2)
+                          #print(edgeNames(converted))
+                          #print(estimate)
+                          names(estimate) <- edgeNames(converted)
+                          return(estimate)
                         }
+                        
+
                       )
 )
 
@@ -439,11 +472,10 @@ IMaGES$methods(
     #imscore = 0
     rawscores <- list()
     
-    test.env <- new.env()
-    test.env$tst <- "TEST"
     #print(paste("penalty: ", penalty))
     
     if (!is.null(matrices)) {
+      print(paste("LENGTH: ", length(matrices)))
       assign("numDatasets", length(matrices), envir=trueIM)
       for (i in 1:length(matrices)) {
         
@@ -487,11 +519,21 @@ IMaGES$methods(
       run()
     }
     
+    single.graphs <- list()
+    
+    for (i in 1:length(.graphs)) {
+      #create .in.edges structure and convert it to graphNEL object
+      converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
+      print("Type of converted: ")
+      print(converted)
+      single.graphs[[i]] <-list(.graph = converted, .params = apply.sem(converted, .graphs[[i]]$.score$pp.dat$data))
+    }
     
     print("---------------")
     
     #imscore <<- IMScore()
-    results <<- list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes)
+    global <- list(.graph = convert(list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes)), .params = single.graphs[[1]]$.params)
+    results <<- list(.global = global, .single.graphs = single.graphs)
     
     #results$.in.edges <- trueIM$global.edges
     #results$.nodes <- .graphs[[1]]$.nodes
@@ -678,9 +720,11 @@ setRefClass("IMGraph",
                 
                 
                 .old.edges <<- .in.edges
-                .in.edges <<- new.graph$in.edges
+                #.in.edges <<- new.graph$in.edges
+                .in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 .saved.edges <<- .in.edges
-                #.current_repr$.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
+                #test <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
+                #print(test)
                 names(.in.edges) <<- .nodes
                 .edge.change <<- list(new.graph$edge.change$src, new.graph$edge.change$dst, new.graph$edge.change$alg)
                 #print("AFTER")
@@ -699,59 +743,6 @@ setRefClass("IMGraph",
                 .in.edges <<- .saved.edges
               },
               
-              #' greedy.search = function(direction = c("forward", "backward", "turning")) {
-              #'   stopifnot(!is.null(score <- getScore()))
-              #'   
-              #'   ## Cast direction
-              #'   direction <- match.arg(direction)
-              #'   alg.name <- switch(direction,
-              #'                      forward = "GIES-F",
-              #'                      backward = "GIES-B",
-              #'                      turning = "GIES-T")
-              #'   
-              #'   new.graph <- .Call("causalInference",
-              #'                      .in.edges,
-              #'                      score$pp.dat,
-              #'                      alg.name,
-              #'                      score$c.fcn,
-              #'                      causal.inf.options(caching = FALSE),
-              #'                      PACKAGE = "imagestest")
-              #'   if (identical(new.graph, "interrupt"))
-              #'     return(FALSE)
-              #'   
-              #'   if (new.graph$steps > 0) {
-              #'     .in.edges <<- new.graph$in.edges
-              #'     names(.in.edges) <<- .nodes
-              #'   }
-              #'   
-              #'   return(new.graph$steps)
-              #' },
-              #' 
-              #' #' Performs a causal inference from an arbitrary start DAG
-              #' #' with a specified algorithm
-              #' caus.inf = function(algorithm = c("GIES", "GIES-F", "GIES-B", "GIES-T", "GIES-STEP",
-              #'                                   "GDS", "SiMy"), ...) {
-              #'   stopifnot(!is.null(score <- getScore()))
-              #'   algorithm <- match.arg(algorithm)
-              #'   
-              #'   print("entering")
-              #'   
-              #'   new.graph <- .Call("causalInference",
-              #'                      .in.edges,
-              #'                      score$pp.dat,
-              #'                      algorithm,
-              #'                      score$c.fcn,
-              #'                      causal.inf.options(...),
-              #'                      PACKAGE = "imagestest")
-              #'   
-              #'   if (identical(new.graph, "interrupt"))
-              #'     return(FALSE)
-              #'   else {
-              #'     .in.edges <<- new.graph$in.edges
-              #'     names(.in.edges) <<- .nodes
-              #'     return(TRUE)
-              #'   }
-              #' },
               
               #' Yields a representative (estimating parameters via MLE)
               repr = function() {
@@ -774,6 +765,15 @@ setRefClass("IMGraph",
               }
             ))
 
+#plot function for graphs generated by IMaGES
+plotIMGraph = function(graph.list) {
+  graph <- graph.list$.graph
+  print(typeof(graph))
+  params <- graph.list$.params
+  print("test")
+  finalgraph <- agopen(graph, "", attrs=list(node=list(shape="ellipse")), edgeAttrs=list(label=params))
+  plot(finalgraph)
+}
 
 ### GLOBAL VAR
 

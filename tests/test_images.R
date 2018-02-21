@@ -39,7 +39,7 @@ create_im_dags <- function(num_sets) {
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
     #inject noise into DAGs using rnorm
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.1),5000,8),                       g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.1),5000,8), g = gGtrue)
     data_list[[i]] <- set8
     #increment start seed
     start_seed = start_seed + 2000
@@ -209,9 +209,9 @@ driver_prob <- function() {
   #create score objects
   im_run_scores <- create_scores(list(dataset1, dataset2))
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0.1)
   
-  plot_graph(im_fits$results)
+  plot_graph(im_fits$results$.in.edges)
   
   #plot results
   # for (i in 1:length(im_fits$results)) {
@@ -268,20 +268,22 @@ autism_driver <- function() {
   for (i in 1:length(filenames)) {
   #for (i in 1:2) {
     #this might be causing the plotting issue but i'm not yet sure of a workaround
-    matrices[[i]] <- as.matrix(read.table(filenames[[i]]))#, skip=1))
+    matrices[[i]] <- as.matrix(read.table(filenames[[i]], header=TRUE))
     #test1 <- as.matrix(read.table(filenames[[i]]))#, skip=1))
     #test2 <- as.matrix(read.table(filenames[[i]]), skip=1)
     
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=0)
+  results = new("IMaGES", matrices = matrices, penalty=0.01)
+  
+  print(results$results)
   
   #plot resulting DAGs
-  for (i in 1:length(results)) {
-    par(mfrow=c(1,2))
-    plot(results$results[[i]][[2]], main = "Estimated CPDAG")
-  }
+  # for (i in 1:length(results)) {
+  #   par(mfrow=c(1,2))
+  #   plot(results$results[[i]][[2]], main = "Estimated CPDAG")
+  # }
 
 }
 

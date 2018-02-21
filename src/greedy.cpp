@@ -1554,7 +1554,7 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyForwardEdge(const Fo
     return boost::tuple<uint, uint, std::string>(u_opt, v_opt, "GIES-F");
   }
   else
-    return boost::tuple<uint, uint, std::string>(0, 0, "GIES-F");
+    return boost::tuple<uint, uint, std::string>(-1, -1, "GIES-F");
 }
 
 bool EssentialGraph::greedyBackward()
