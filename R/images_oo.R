@@ -720,8 +720,8 @@ setRefClass("IMGraph",
                 
                 
                 .old.edges <<- .in.edges
-                #.in.edges <<- new.graph$in.edges
-                .in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
+                .in.edges <<- new.graph$in.edges
+                #.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 .saved.edges <<- .in.edges
                 #test <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 #print(test)

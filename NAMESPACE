@@ -32,7 +32,7 @@ importFrom("robustbase",
 
 importFrom("graph",
            edgeNames, reverseEdgeDirections,
-           edgeRenderInfo, "edgeRenderInfo<-")
+           edgeRenderInfo, nodes, "edgeRenderInfo<-")
 importClassesFrom("graph", graph, graphAM, graphNEL)
 importMethodsFrom("graph",
 		  ## addEdge,
