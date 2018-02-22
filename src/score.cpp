@@ -130,10 +130,6 @@ double ScoreRFunction::global(const EssentialGraph& dag) const
 
 	// Call R function for global score
 	double result = Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
-	std::ofstream logfile;
-	logfile.open("log_images.txt", std::ios::app);
-	logfile << "From C++/score.cpp/ScoreRFunction/global: res = " << result << "\n";
-	logfile.close();
 	std::cout << "From C++/score.cpp/ScoreRFunction/global: res = " << result;
 	return result;
 }
@@ -293,10 +289,6 @@ double ScoreGaussL0PenScatter::global(const EssentialGraph& dag) const
   // Call R function for global score
   
   double result = Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
-  std::ofstream logfile;
-  logfile.open("log_images.txt", std::ios::app);
-  logfile << "From C++/score.cpp/ScoreGaussL0PenScatter/global: res = " << result << "\n";
-  logfile.close();
   std::cout << "From C++/score.cpp/ScoreGaussL0PenScatter/global: res = " << result;
   return result;
 }
@@ -465,10 +457,6 @@ double ScoreGaussL0PenRaw::global(const EssentialGraph& dag) const
   
   // Call R function for global score
   double result = Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
-  std::ofstream logfile;
-  logfile.open("log_images.txt", std::ios::app);
-  logfile << "From C++/score.cpp/ScoreGaussL0PenRaw/global: res = " << result << "\n";
-  logfile.close();
   std::cout << "From C++/score.cpp/ScoreGaussL0PenRaw/global: res = " << result;
   return result;
 }

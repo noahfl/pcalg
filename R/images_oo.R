@@ -254,27 +254,7 @@ IMaGES <- setRefClass("IMaGES",
                           else if (opt == 0) {
                             str_opt <- 'none'
                           }                          
-                          
-                          
-                          
-                          # str_phases <- list()
-                          # for (i in 1:length(opt_phases)) {
-                          #   if (opt_phases[[i]] == 1) {
-                          #     str_phases[[i]] <- 'GIES-F'
-                          #   }
-                          #   else if (opt_phases[[i]] == 2) {
-                          #     str_phases[[i]] <- 'GIES-B'
-                          #   }
-                          #   else if (opt_phases[[i]] == 3) {
-                          #     str_phases[[i]] <- 'GIES-T'
-                          #   }
-                          #   else if (opt_phases[[i]] == 0) {
-                          #     str_phases[[i]] <- 'none'
-                          #   }
-                          # }
-                          # 
-                          # print(paste("phases: ", str_phases))
-                          # opt = find_opt(str_phases)
+
                           temp.scores <- vector()
                           if (!(str_opt == "none")) {
                             for (j in 1:length(.graphs)) {
@@ -345,23 +325,22 @@ IMaGES <- setRefClass("IMaGES",
                           dir <- edge.change[[3]]
                           if (dir == 'GIES-F') {
                             #insert
-                            if (!(edge.exists(src,dst))) {
+                            if (!(edge.exists(src, dst))) {
                               print("Inserting edge")
                               insert.global(src, dst)
                             }
                           }
                           else if (dir == 'GIES-B') {
                             #remove
-                            if (edge.exists(src,dst)) {
+                            if (edge.exists(src, dst)) {
                               print("Removing edge")
                               remove.global(src, dst)  
                             }
                           }
                           else if (dir == 'GIES-T') {
-                            
-                            if (edge.exists(src,dst)) {
+                            #turn
+                            if (edge.exists(src, dst)) {
                               print("Turning edge")
-                              #turn
                               turn.global(src, dst)
                             }
                           }

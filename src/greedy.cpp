@@ -1893,7 +1893,7 @@ int EssentialGraph::greedyStepR()
     }
   }
   
-  std::cout << "SD_FORWARD:" << SD_FORWARD << " SD_BACKWARD: " << SD_BACKWARD << " SD_TURNING: " << SD_TURNING <<"\n";
+  //std::cout << "SD_FORWARD:" << SD_FORWARD << " SD_BACKWARD: " << SD_BACKWARD << " SD_TURNING: " << SD_TURNING <<"\n";
   
   // If caching is enabled, reset cache since it is not valid any more
   // after an arbitrary step
