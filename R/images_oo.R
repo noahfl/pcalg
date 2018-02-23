@@ -190,6 +190,8 @@ IMaGES <- setRefClass("IMaGES",
                         
                         update_score = function() {
                           
+                          print(paste("IM before: ", trueIM$score))
+                          
                           imscore <- IMScore()
                           #imscore <<- IMScore()
                           #trueIM <<- imscore
@@ -253,8 +255,8 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           else if (opt == 0) {
                             str_opt <- 'none'
-                          }                          
-
+                          }
+                          
                           temp.scores <- vector()
                           if (!(str_opt == "none")) {
                             for (j in 1:length(.graphs)) {
@@ -266,7 +268,49 @@ IMaGES <- setRefClass("IMaGES",
                               temp.scores[[j]] <- IMScore()
                               .graphs[[j]]$undo.step()
                           
-                          best.graph.index <- which(temp.scores == max(temp.scores))
+
+                          #best.graph.index <- which(temp.scores == max(temp.scores))
+                          find.best.step(temp.scores)#, best.graph.index)
+                          # print(paste("Best index: ", best.graph.index))
+                          # print(best.graph.index)
+                          # 
+                          # #re-enable all steps after seeing which best impacts IMScore
+                          # for (j in 1:length(.graphs)) {
+                          #   .graphs[[j]]$redo.step()
+                          # }
+                          # #update IMScore with all changes
+                          # update_score()
+                          # 
+                          # #just use first index of best.graph.index for now
+                          # #TODO: find smarter way to do this
+                          # if (!update.global(.graphs[[best.graph.index[[1]]]]$.edge.change)) {
+                          #   
+                          # }
+                              
+                              #return(TRUE)
+                            }
+                          }
+                          # else {
+                          #   return(FALSE)
+                          # }
+  
+                        },
+                        
+                        find.best.step = function(score.list) {
+                          # for (i in 1:length(score.list)) {
+                          #   .graphs[[i]]$undo.step()
+                          # }
+                          inf <- 0
+                          for (i in 1:length(score.list)) {
+                            if (is.infinite(score.list[[i]])) {
+                              inf <- inf + 1
+                            }
+                          }
+                          if (inf == length(score.list)) {
+                            return()
+                          }
+                          print(paste("SCORES: ", score.list))
+                          best.graph.index <- which(score.list == max(score.list))
                           print(paste("Best index: ", best.graph.index))
                           print(best.graph.index)
                           
@@ -279,15 +323,12 @@ IMaGES <- setRefClass("IMaGES",
                           
                           #just use first index of best.graph.index for now
                           #TODO: find smarter way to do this
-                          update.global(.graphs[[best.graph.index[[1]]]]$.edge.change)
-                              
-                              #return(TRUE)
-                            }
+                          if (!update.global(.graphs[[best.graph.index[[1]]]]$.edge.change)) {
+                            #make the score lower than the rest so it considers the next highest score
+                            #better way to do this? probably
+                            score.list[[best.graph.index[[1]]]] <- -Inf
+                            find.best.step(score.list)
                           }
-                          # else {
-                          #   return(FALSE)
-                          # }
-  
                         },
                         
                         #insert edge into global graph, where dst contains the list of edges going towards it
@@ -304,7 +345,11 @@ IMaGES <- setRefClass("IMaGES",
                         #remove edge from global graph, where *dst* contains the list of edges going towards it
                         remove.global = function(src, dst) {
                           #remove edge by reassigning edge list to itself, where none of the values are *src*
-                          trueIM$global.edges[[dst]] <- trueIM$global.edges[[dst]][[trueIM$global.edges[[dst]] != src]]
+                          print(paste("src: ", src))
+                          print(paste("dst: ", dst))
+                          print(paste("trueIM$global.edges[[dst]]: ", trueIM$global.edges[[dst]]))
+                          #print(paste("trueIM$global.edges[[dst]][[trueIM$global.edges[[dst]]: ", trueIM$global.edges[[dst]]))
+                          trueIM$global.edges[[dst]] <- trueIM$global.edges[[dst]][trueIM$global.edges[[dst]] != src]
                         },
                         
                         #perform swap on *src* and *dst* to imitate turning method
@@ -314,7 +359,19 @@ IMaGES <- setRefClass("IMaGES",
                         },
                         
                         edge.exists = function(src, dst) {
-                            return(src %in% trueIM$global.edges[[dst]])
+                          return(src %in% trueIM$global.edges[[dst]])
+
+                        },
+                        
+                        is.legal.edge = function(src, dst) {
+                          print(paste("SRC: ", src, " DST: ", dst))
+                          if (src > 0 && src <= ncol(.graphs[[1]]$.score$pp.dat$data)) {
+                            if (dst > 0 && dst <= ncol(.graphs[[1]]$.score$pp.dat$data)) {
+                              return(TRUE)
+                            }
+                          }
+                          print("not true")
+                          return(FALSE)
                         },
                         
                         #handles updating of global graph. calls insert.global, remove.global,
@@ -325,24 +382,39 @@ IMaGES <- setRefClass("IMaGES",
                           dir <- edge.change[[3]]
                           if (dir == 'GIES-F') {
                             #insert
-                            if (!(edge.exists(src, dst))) {
+                            if (is.legal.edge(src,dst) && !(edge.exists(src, dst))) {
                               print("Inserting edge")
                               insert.global(src, dst)
+                              return(TRUE)
+                            }
+                            else {
+                              return(FALSE)
                             }
                           }
                           else if (dir == 'GIES-B') {
                             #remove
-                            if (edge.exists(src, dst)) {
+                            if (is.legal.edge(src,dst) && edge.exists(src, dst)) {
                               print("Removing edge")
-                              remove.global(src, dst)  
+                              remove.global(src, dst)
+                              return(TRUE)
+                            }
+                            else {
+                              return(FALSE)
                             }
                           }
                           else if (dir == 'GIES-T') {
                             #turn
-                            if (edge.exists(src, dst)) {
+                            if (is.legal.edge(src,dst) && edge.exists(src, dst)) {
                               print("Turning edge")
                               turn.global(src, dst)
+                              return(TRUE)
                             }
+                            else {
+                              return(FALSE)
+                            }
+                          }
+                          else {
+                            return(TRUE)
                           }
                         },
                         
@@ -385,9 +457,9 @@ IMaGES <- setRefClass("IMaGES",
                             # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
                             # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
                             
-                            print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.in.edges))
+                            print(.graphs[[i]]$.score$global.score.int(.graphs[[i]]$.in.edges))
                             #sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr)
-                            sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.in.edges)
+                            sum <- sum + .graphs[[i]]$.score$global.score.int(.graphs[[i]]$.in.edges)
                           }
                           
                           print(paste("n: ", n, " k: ", k, "length: ", length(.graphs), "sum: ", sum))
@@ -459,7 +531,8 @@ IMaGES$methods(
       for (i in 1:length(matrices)) {
         
         #print("adding score")
-        rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]])
+        rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]], lambda = penalty)
+        print(rawscores[[i]]$pp.dat$lambda)
       }  
     }
     else {
@@ -467,6 +540,8 @@ IMaGES$methods(
       for (i in 1:length(scores)) {
         print(paste("length of scores: ", length(scores)))
         print(paste("num rows: ", nrow(scores[[i]]$pp.dat$data)))
+        #scores[[i]]$pp.dat$lambda <- scores[[i]]$pp.dat$lambda * penalty
+        scores[[i]]$pp.dat$lambda <- penalty
         rawscores[[i]] <- scores[[i]]
       }
     }
@@ -701,7 +776,7 @@ setRefClass("IMGraph",
                 .old.edges <<- .in.edges
                 .in.edges <<- new.graph$in.edges
                 #.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
-                .saved.edges <<- .in.edges
+                .saved.edges <<- new.graph$in.edges
                 #test <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 #print(test)
                 names(.in.edges) <<- .nodes
@@ -719,6 +794,11 @@ setRefClass("IMGraph",
               },
               
               redo.step = function() {
+                # print("SAME?: ")
+                # print(.in.edges)
+                # print("---------------")
+                # print(.saved.edges)
+                #invisible(readline(prompt="Press [enter] to continue"))
                 .in.edges <<- .saved.edges
               },
               

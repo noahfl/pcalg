@@ -207,9 +207,10 @@ driver_prob <- function() {
   dataset3 <- make_data(0.4)
   
   #create score objects
-  im_run_scores <- create_scores(list(dataset1))
+  im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0.1)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=150)
+  
   
   plotIMGraph(im_fits$results$.global)
   
@@ -236,7 +237,7 @@ plot_driver <- function() {
     #create score objects
     im_run_scores <- create_scores(im_run_dags)
     #run IMaGES
-    im_fits <- new("IMaGES", scores = im_run_scores, penalty=0)
+    im_fits <- new("IMaGES", scores = im_run_scores, penalty=2)
     #append results to result_sets
     result_sets[[k]] <- im_fits
     
@@ -275,9 +276,9 @@ autism_driver <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=0.01)
+  results = new("IMaGES", matrices = matrices, penalty=5)
   
-  print(results$results)
+  plotIMGraph(results$results$.global)
   
   #plot resulting DAGs
   # for (i in 1:length(results)) {
