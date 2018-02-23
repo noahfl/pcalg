@@ -577,16 +577,17 @@ IMaGES$methods(
     
     for (i in 1:length(.graphs)) {
       #create .in.edges structure and convert it to graphNEL object
-      converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
-      print("Type of converted: ")
-      print(converted)
+      #converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
+      #print("Type of converted: ")
+      #print(converted)
+      converted <- convert(list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes))
       single.graphs[[i]] <-list(.graph = converted, .params = apply.sem(converted, .graphs[[i]]$.score$pp.dat$data))
     }
     
     print("---------------")
     
     #imscore <<- IMScore()
-    global <- list(.graph = convert(list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes)), .params = single.graphs[[1]]$.params)
+    global <- list(.graph = converted, .params = single.graphs[[1]]$.params)
     results <<- list(.global = global, .single.graphs = single.graphs)
     
     #results$.in.edges <- trueIM$global.edges

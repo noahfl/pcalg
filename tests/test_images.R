@@ -209,7 +209,7 @@ driver_prob <- function() {
   #create score objects
   im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=150)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=50)
   
   
   plotIMGraph(im_fits$results$.global)
