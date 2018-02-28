@@ -157,7 +157,8 @@ export(trueCov,
        adjustment,
        isValidGraph,
        IMaGES,
-       plotIMGraph)
+       plotIMGraph,
+       plotAll)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------

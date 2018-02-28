@@ -276,9 +276,9 @@ autism_driver <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=5)
+  results = new("IMaGES", matrices = matrices, penalty=1)
   
-  plotIMGraph(results$results$.global)
+  plotAll(results)
   
   #plot resulting DAGs
   # for (i in 1:length(results)) {
@@ -288,6 +288,36 @@ autism_driver <- function() {
 
 }
 
+powerball_driver <- function() {
+  #get file locations
+  sapply(list.files(pattern="[.]R$", path="R/", full.names=TRUE), source);
+  
+  #get filenames 
+  filenames <- list.files("test/powerball", pattern="pb*", full.names=TRUE)
+  matrices = list()
+  
+  #import data
+  for (i in 1:length(filenames)) {
+    #for (i in 1:2) {
+    #this might be causing the plotting issue but i'm not yet sure of a workaround
+    matrices[[i]] <- as.matrix(read.table(filenames[[i]], header=FALSE))
+    #test1 <- as.matrix(read.table(filenames[[i]]))#, skip=1))
+    #test2 <- as.matrix(read.table(filenames[[i]]), skip=1)
+    
+  }
+  
+  #run IMaGES on data
+  results = new("IMaGES", matrices = matrices, penalty=1)
+  
+  plotIMGraph(results$results$.global)
+  
+  #plot resulting DAGs
+  # for (i in 1:length(results)) {
+  #   par(mfrow=c(1,2))
+  #   plot(results$results[[i]][[2]], main = "Estimated CPDAG")
+  # }
+  
+}
 
 convert <- function(from) {
   edgeList <- lapply(from$.in.edges, function(v) from$.nodes[v])
