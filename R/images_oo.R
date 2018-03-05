@@ -215,7 +215,8 @@ IMaGES <- setRefClass("IMaGES",
                         
                         mode = function(x) {
                           ux <- unique(x)
-                          ux[which.max(tabulate(match(x, ux)))]
+                          #ux[which.max(tabulate(match(x, ux)))]
+                          tab <- tabulate(match(x, ux)); ux[tab == max(tab)]
                         },
                         
                         run = function() {
@@ -238,11 +239,30 @@ IMaGES <- setRefClass("IMaGES",
                                                      .graphs[[j]]$causal.inf.options(caching = FALSE, maxSteps = 1),
                                                      PACKAGE = "imagestest")
                           }
+                          #invisible(readline(prompt="Press [enter] to continue"))
                           #}
                           
                           opt <- mode(opt_phases)
+                          print(opt_phases)
+                          print(paste("opt_phase(s): ", opt))
+                          #invisible(readline(prompt="Press [enter] to continue"))
                           
                           str_opt <- ''
+                          
+                          for (i in 1:length(opt_phases)) {
+                            if (opt_phases[[i]] == 1) {
+                              opt_phases[[i]] <- 'GIES-F'
+                            }
+                            else if (opt_phases[[i]] == 2) {
+                              opt_phases[[i]] <- 'GIES-B'
+                            }
+                            else if (opt_phases[[i]] == 3) {
+                              opt_phases[[i]] <- 'GIES-T'
+                            }
+                            else if (opt_phases[[i]] == 0) {
+                              opt_phases[[i]] <- 'none'
+                            }
+                          }
                           
                           if (opt == 1) {
                             str_opt <- 'GIES-F'
@@ -252,25 +272,38 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           else if (opt == 3) {
                             str_opt <- 'GIES-T'
+                            print("Detected TURN")
+                            #print("Something messed up here")
+                            invisible(readline(prompt="Press [enter] to continue"))
                           }
                           else if (opt == 0) {
                             str_opt <- 'none'
+                            print("Detected NONE")
+                            #print("Something messed up here")
+                            #invisible(readline(prompt="Press [enter] to continue"))
                           }
                           
                           temp.scores <- vector()
                           if (!(str_opt == "none")) {
                             for (j in 1:length(.graphs)) {
-                              print(paste("opt_phase: ", opt))
+                              print(paste("opt_phase: ", str_opt))
                               #print(toString(j))
+                              
+                              
+                              #run_phase(phase=str_opt, j)
                               run_phase(phase=str_opt, j)
+                              
+                              
                               #TODO: run, get score, roll back for each
                               #then implement one with best score update for global graph
                               temp.scores[[j]] <- IMScore()
                               .graphs[[j]]$undo.step()
-                          
+                            }
+                            find.best.step(temp.scores)
+                          }
 
                           #best.graph.index <- which(temp.scores == max(temp.scores))
-                          find.best.step(temp.scores)#, best.graph.index)
+                          #, best.graph.index)
                           # print(paste("Best index: ", best.graph.index))
                           # print(best.graph.index)
                           # 
@@ -288,11 +321,10 @@ IMaGES <- setRefClass("IMaGES",
                           # }
                               
                               #return(TRUE)
-                            }
-                          }
                           # else {
                           #   return(FALSE)
                           # }
+
   
                         },
                         
@@ -354,8 +386,13 @@ IMaGES <- setRefClass("IMaGES",
                         
                         #perform swap on *src* and *dst* to imitate turning method
                         turn.global = function(src, dst) {
+                          print(trueIM$global.edges)
                           remove.global(src, dst)
+                          print(trueIM$global.edges)
                           insert.global(dst,src)
+                          print(trueIM$global.edges)
+                          invisible(readline(prompt="Press [enter] to continue"))
+                          
                         },
                         
                         edge.exists = function(src, dst) {
@@ -404,13 +441,18 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           else if (dir == 'GIES-T') {
                             #turn
+                            print("Made it to TURN")
+                            invisible(readline(prompt="Press [enter] to continue"))
                             if (is.legal.edge(src,dst) && edge.exists(src, dst)) {
                               print("Turning edge")
                               turn.global(src, dst)
                               return(TRUE)
                             }
                             else {
+                              print("Something messed up here")
+                              invisible(readline(prompt="Press [enter] to continue"))
                               return(FALSE)
+                              
                             }
                           }
                           else {
@@ -470,9 +512,9 @@ IMaGES <- setRefClass("IMaGES",
                           #imscore <- ((-2/m) *  sum) + ((penalty * k) * log(n))
                           imscore <- ((2/m) *  sum) + ((penalty * k) * log(n))
                           
-                          if (!(length(.graphs) == 1)) {
-                            assign("isLocalIM", TRUE, envir=trueIM) 
-                          }
+                          # if (!(length(.graphs) == 1)) {
+                          #   assign("isLocalIM", TRUE, envir=trueIM) 
+                          # }
                           
                           #imscore <<- imscore
                           #print(paste("imscore in function: ", imscore, "\n"))
@@ -485,6 +527,8 @@ IMaGES <- setRefClass("IMaGES",
                           
                           edgeList <- lapply(from$.in.edges, function(v) from$.nodes[v])
                           names(edgeList) <- from$.nodes
+                          print("edgeList")
+                          print(edgeList)
                           result <- new("graphNEL",
                                         nodes = from$.nodes,
                                         edgeL = edgeList,
@@ -581,21 +625,43 @@ IMaGES$methods(
     print("---------------")
     
     
-    for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
+    for (i in 1:(2*ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
       # if (!run()) {
       #   break
       # }
       run()
     }
     
+    # for (i in 1:ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data)) {
+    #   temp.scores <- vector()
+    # 
+    #   for (j in 1:length(.graphs)) {
+    # 
+    #     #run_phase(phase=str_opt, j)
+    #     run_phase(phase="GIES-T", j)
+    #     
+    #     
+    #     #TODO: run, get score, roll back for each
+    #     #then implement one with best score update for global graph
+    #     temp.scores[[j]] <- IMScore()
+    #     .graphs[[j]]$undo.step()
+    #   }
+    #   
+    #   #best.graph.index <- which(temp.scores == max(temp.scores))
+    #   find.best.step(temp.scores)
+    # }
+    
     single.graphs <- list()
     params.list <- list()
+    converted <- convert(list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes))
+    print(.graphs[[1]]$.in.edges)
+    alt_converted <- convert(list(.in.edges = .graphs[[1]]$.in.edges, .nodes = .graphs[[1]]$.nodes))
     for (i in 1:length(.graphs)) {
       #create .in.edges structure and convert it to graphNEL object
       #converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
       #print("Type of converted: ")
       #print(converted)
-      converted <- convert(list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes))
+      
       params <- apply.sem(converted, .graphs[[i]]$.score$pp.dat$data)
       params.list[[i]] <- params
       single.graphs[[i]] <-list(.graph = converted, .params = params)
@@ -606,8 +672,9 @@ IMaGES$methods(
     print("---------------")
     
     #imscore <<- IMScore()
+    alt <- list(.graph = alt_converted, .params = average.sem(params.list))
     global <- list(.graph = converted, .params = average.sem(params.list))
-    results <<- list(.global = global, .single.graphs = single.graphs)
+    results <<- list(.global = global, .single.graphs = single.graphs, .alt = alt)
     
     #results$.in.edges <- trueIM$global.edges
     #results$.nodes <- .graphs[[1]]$.nodes
@@ -788,7 +855,6 @@ setRefClass("IMGraph",
                 #   .in.edges <<- new.graph$in.edges
                 #   names(.in.edges) <<- .nodes
                 # }
-                
                 #print("BEFORE")
                 #print(.in.edges)
                 
@@ -806,7 +872,8 @@ setRefClass("IMGraph",
                 
                 #names(.in.edges) <<- .nodes
                 
-                return(new.graph$steps == 1)
+                #return(new.graph$steps == 1)
+                return(FALSE)
               },
               
               undo.step = function() {

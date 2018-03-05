@@ -1922,6 +1922,8 @@ int EssentialGraph::greedyStepR()
   //   break;
   // }
   
+  std::cout << "optDir: " << optDir << "\n";
+  
   return optDir;
 }
 
