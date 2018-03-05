@@ -576,7 +576,7 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, scores = NULL, penalty = 2, imscore = NULL) {
+  initialize = function(matrices = NULL, scores = NULL, penalty = 3, imscore = NULL) {
     #images <-
     #print("initializing")
     #imscore = 0
@@ -664,7 +664,8 @@ IMaGES$methods(
       
       params <- apply.sem(converted, .graphs[[i]]$.score$pp.dat$data)
       params.list[[i]] <- params
-      single.graphs[[i]] <-list(.graph = converted, .params = params)
+      single.converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
+      single.graphs[[i]] <-list(.graph = single.converted, .params = params)
     }
     
     print(single.graphs[[i]]$.params)
@@ -672,8 +673,11 @@ IMaGES$methods(
     print("---------------")
     
     #imscore <<- IMScore()
-    alt <- list(.graph = alt_converted, .params = average.sem(params.list))
-    global <- list(.graph = converted, .params = average.sem(params.list))
+    
+    #switched these for the time being
+    global <- list(.graph = alt_converted, .params = average.sem(params.list))
+    alt <- list(.graph = converted, .params = average.sem(params.list))
+    
     results <<- list(.global = global, .single.graphs = single.graphs, .alt = alt)
     
     #results$.in.edges <- trueIM$global.edges

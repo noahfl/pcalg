@@ -60,8 +60,8 @@ create_scores <- function(datasets) {
 run_originals <- function(datasets) {
   fits = list()
   for (i in 1:length(datasets)) {
-    images <- new("IMaGES", scores = list(datasets[[i]]), penalty=0)
-    fits[[i]] <- images$results
+    images <- new("IMaGES", scores = list(datasets[[i]]), penalty=3)
+    fits[[i]] <- images
   }
   return(fits)
 }
@@ -174,7 +174,7 @@ driver <- function() {
   
   #plot in.edges for each graph
   for (i in 1:length(orig_fits)) {
-    plot_graph(orig_fits[[i]])
+    plotIMGraph(orig_fits[[i]]$results$.global)
   }
   
   #now do the same thing for IMaGES
@@ -185,12 +185,11 @@ driver <- function() {
   #create score objects
   im_run_scores <- create_scores(im_run_dags)
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=0.5)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
   
   #plot results
-  for (i in 1:length(im_fits$results)) {
-    plot_graph(im_fits$results[[i]][[2]])
-  }
+  par(mfrow=c(1,2))
+  plotIMGraph(im_fits$results$.global)
 }
 
 driver_prob <- function() {
@@ -202,14 +201,15 @@ driver_prob <- function() {
   #create DAGS
   #im_run_dags <- create_im_dags(num_sets)
   
-  dataset1 <- make_data(0.2)
+  dataset1 <- make_data(0.3)
   dataset2 <- make_data(0.3)
-  dataset3 <- make_data(0.4)
+  dataset3 <- make_data(0.3)
   
   #create score objects
-  im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
+  #im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
+  im_run_scores <- create_scores(list(dataset1))
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=50)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
   
   
   plotIMGraph(im_fits$results$.global)
@@ -223,7 +223,7 @@ driver_prob <- function() {
 #driver for calculation of errors across runs of increasing size
 plot_driver <- function() {
   #change to number of sets to iterate up to
-  num_sets <- 50
+  num_sets <- 10
   
   #generate gmG8 data
   gmG8 <- get_gmg()
@@ -237,7 +237,7 @@ plot_driver <- function() {
     #create score objects
     im_run_scores <- create_scores(im_run_dags)
     #run IMaGES
-    im_fits <- new("IMaGES", scores = im_run_scores, penalty=2)
+    im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
     #append results to result_sets
     result_sets[[k]] <- im_fits
     
@@ -276,10 +276,11 @@ autism_driver <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=27)
-  
+  results = new("IMaGES", matrices = matrices, penalty=5)
   
   plotIMGraph(results$results$.global)
+  plotIMGraph(results$results$.alt)
+  
   plotAll(results)
   
   #plot resulting DAGs
@@ -326,7 +327,7 @@ test_dataset <- function() {
   #get file locations
   sapply(list.files(pattern="[.]R$", path="R/", full.names=TRUE), source);
   
-  #get filenames 
+  #get filenames c
   filenames <- list.files("test/d9", pattern="dataset*", full.names=TRUE)
   matrices = list()
   
@@ -341,11 +342,11 @@ test_dataset <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=1)
+  results = new("IMaGES", matrices = matrices, penalty=3)
   
   
   
-  plotIMGraph(results$results$.alt)
+  plotIMGraph(results$results$.global)
   plotAll(results)
   
   #plot resulting DAGs
