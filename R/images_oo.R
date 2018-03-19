@@ -274,7 +274,7 @@ IMaGES <- setRefClass("IMaGES",
                             str_opt <- 'GIES-T'
                             print("Detected TURN")
                             #print("Something messed up here")
-                            invisible(readline(prompt="Press [enter] to continue"))
+                            #invisible(readline(prompt="Press [enter] to continue"))
                           }
                           else if (opt == 0) {
                             str_opt <- 'none'
@@ -299,9 +299,17 @@ IMaGES <- setRefClass("IMaGES",
                               temp.scores[[j]] <- IMScore()
                               .graphs[[j]]$undo.step()
                             }
+                            
+                            #re-enable all steps after seeing which best impacts IMScore
+                            #might mess up?
+                            for (j in 1:length(.graphs)) {
+                              .graphs[[j]]$redo.step()
+                            }
+                            
                             find.best.step(temp.scores)
                           }
 
+                          
                           #best.graph.index <- which(temp.scores == max(temp.scores))
                           #, best.graph.index)
                           # print(paste("Best index: ", best.graph.index))
@@ -346,10 +354,7 @@ IMaGES <- setRefClass("IMaGES",
                           print(paste("Best index: ", best.graph.index))
                           print(best.graph.index)
                           
-                          #re-enable all steps after seeing which best impacts IMScore
-                          for (j in 1:length(.graphs)) {
-                            .graphs[[j]]$redo.step()
-                          }
+
                           #update IMScore with all changes
                           update_score()
                           
@@ -391,7 +396,7 @@ IMaGES <- setRefClass("IMaGES",
                           print(trueIM$global.edges)
                           insert.global(dst,src)
                           print(trueIM$global.edges)
-                          invisible(readline(prompt="Press [enter] to continue"))
+                          #invisible(readline(prompt="Press [enter] to continue"))
                           
                         },
                         
@@ -442,7 +447,7 @@ IMaGES <- setRefClass("IMaGES",
                           else if (dir == 'GIES-T') {
                             #turn
                             print("Made it to TURN")
-                            invisible(readline(prompt="Press [enter] to continue"))
+                            #invisible(readline(prompt="Press [enter] to continue"))
                             if (is.legal.edge(src,dst) && edge.exists(src, dst)) {
                               print("Turning edge")
                               turn.global(src, dst)
@@ -450,7 +455,7 @@ IMaGES <- setRefClass("IMaGES",
                             }
                             else {
                               print("Something messed up here")
-                              invisible(readline(prompt="Press [enter] to continue"))
+                              #invisible(readline(prompt="Press [enter] to continue"))
                               return(FALSE)
                               
                             }
@@ -523,6 +528,113 @@ IMaGES <- setRefClass("IMaGES",
                           return(imscore)
                         },
                         
+                        turn.step = function() {
+                          old.graph <- .graphs[[1]]$.in.edges
+                          
+                          best.graph <- old.graph
+                          trueIM$global.edges <- old.graph
+                          
+                          
+                          #edge destination
+                          for (i in 1:length(old.graph)) {
+                            #edge source
+                            for (j in 1:length(old.graph[[i]])) {
+                              #modify the graphs
+                              #old.graph <- trueIM$global.edges
+                              
+                              #it can't point to itself
+                              if (i == j) {
+                                next
+                              }
+                              
+                              #skip if no edges coming in
+                              if (length(old.graph[[i]]) == 0) {
+                                next
+                              }
+
+                              
+                              print("BEFORE")
+                              print(trueIM$global.edges)
+                              if (is.legal.edge(j, i) && edge.exists(j, i) && (edge.exists(i,j))) {
+                                print("removing because reverse edge exists")
+                                remove.global(i, j)
+                              }
+                              
+                              if (is.legal.edge(j, i) && edge.exists(j, i) && !(edge.exists(i,j))) {
+                                turn.global(j, i)
+                              }
+                              print("AFTER")
+                              print(trueIM$global.edges)
+                              for (k in 1:length(.graphs)) {
+                                .graphs[[k]]$.in.edges <- trueIM$global.edges
+                              }
+                              
+                              temp.score <- IMScore()
+                              
+                              if (temp.score > trueIM$score) {
+                                #for adding the original graph into the 
+                                #MEC if it doesn't have the highest score
+                                print("updating BEST - turn")
+                                update.markovs(old.graph, trueIM$score)
+                                best.graph <- .graphs[[1]]$.in.edges
+                              }
+                              else {
+                                print("updating MEC - turn")
+                                print(paste("src: ", j, "dst: ", i))
+                                update.markovs(.graphs[[1]]$.in.edges, temp.score)
+                                #revert to keep scoring baseline consistent
+                                turn.global(i, j)
+                              }
+                              
+                              
+                              if (is.legal.edge(j, i) && edge.exists(j, i)) {
+                                print("Removing edge")
+                                remove.global(j, i)
+                              }
+                              
+                              for (k in 1:length(.graphs)) {
+                                .graphs[[k]]$.in.edges <- trueIM$global.edges
+                              }
+                              
+                              temp.score <- IMScore()
+                              
+                              if (temp.score > trueIM$score) {
+                                #for adding the original graph into the 
+                                #MEC if it doesn't have the highest score
+                                print("updating BEST - remove")
+                                update.markovs(old.graph, trueIM$score)
+                                best.graph <- .graphs[[1]]$.in.edges
+                              }
+                              else {
+                                print("updating MEC - remove")
+                                update.markovs(.graphs[[1]]$.in.edges, temp.score)
+                                #revert to keep scoring baseline consistent
+                                insert.global(j, i)
+                              }
+                            
+
+                            }
+                          }
+                          
+                          for (i in 1:length(.graphs)) {
+                            .graphs[[i]]$.in.edges <- best.graph
+                          }
+                          
+                        },
+                        
+                        update.markovs = function(graph, score) {
+                          #iterate backwards to find lowest score that it's higher than
+                          for (i in length(trueIM$markovs):1) {
+                            # if it is higher, bump lowest markov and sort in the new one
+                            if (score >= trueIM$markovs[[i]]$.score) {
+                              for (k in length(trueIM$markovs) - 1:i + 1) {
+                                trueIM$markovs[[k + 1]] <- trueIM$markovs[[k]]
+                              }
+                              trueIM$markovs[[i]] <- list(.graph=graph, .score=score)
+                            }
+                          }
+                        },
+                        
                         convert = function(from) {
                           
                           edgeList <- lapply(from$.in.edges, function(v) from$.nodes[v])
@@ -559,15 +671,20 @@ IMaGES <- setRefClass("IMaGES",
                         average.sem = function(params.list) {
                           print(length(params.list))
                           base <- params.list[[1]]
-                          for (i in 1:length(params.list)) {
-                            print(length(params.list[[i]]))
+                          if (length(params.list) == 1) {
+                            return(base)
+                          }
+                          for (i in 2:length(params.list)) {
+                            #print(length(params.list[[i]]))
                             for (j in 1:length(params.list[[i]])) {
                               base[j] <- base[j] + params.list[[i]][j]
                             }
                           }
                           
                           for (i in 1:length(params.list)) {
+                            print(paste("base[", i,"] before: ", base[i]))
                             base[i] <- round((base[i] / length(params.list)),2)
+                            print(paste("base[", i,"] after: ", base[i]))
                           }
                           return(base)
                         }
@@ -576,7 +693,7 @@ IMaGES <- setRefClass("IMaGES",
 )
 
 IMaGES$methods(
-  initialize = function(matrices = NULL, scores = NULL, penalty = 3, imscore = NULL) {
+  initialize = function(matrices = NULL, scores = NULL, penalty = 3, imscore = NULL, num.markovs=5) {
     #images <-
     #print("initializing")
     #imscore = 0
@@ -624,13 +741,21 @@ IMaGES$methods(
     
     print("---------------")
     
+    #create list of size num.markovs
+    #initialize to lowest signed int value because you can't compare
+    #ints and NULL
+    trueIM$markovs <- rep(list(list(.graph=NULL, .score=-2147483648)), num.markovs)
     
-    for (i in 1:(2*ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
+    
+    for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
       # if (!run()) {
       #   break
       # }
       run()
     }
+    
+    #turn.step()
+    
     
     # for (i in 1:ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data)) {
     #   temp.scores <- vector()
@@ -668,7 +793,7 @@ IMaGES$methods(
       single.graphs[[i]] <-list(.graph = single.converted, .params = params)
     }
     
-    print(single.graphs[[i]]$.params)
+    #print(single.graphs[[i]]$.params)
     
     print("---------------")
     
@@ -678,7 +803,16 @@ IMaGES$methods(
     global <- list(.graph = alt_converted, .params = average.sem(params.list))
     alt <- list(.graph = converted, .params = average.sem(params.list))
     
-    results <<- list(.global = global, .single.graphs = single.graphs, .alt = alt)
+    markovs <- list()
+    
+    # for (i in 1:num.markovs) {
+    #   #print(trueIM$markovs)
+    #   converted.markov <- convert(list(.in.edges = trueIM$markovs[[i]]$.graph, .nodes = .graphs[[1]]$.nodes))
+    #   print("worked")
+    #   markovs[[i]] <- list(.graph=converted.markov, .params = average.sem(params.list))
+    # }
+    
+    results <<- list(.global = global, .single.graphs = single.graphs, .alt = alt, .markovs = markovs)
     
     #results$.in.edges <- trueIM$global.edges
     #results$.nodes <- .graphs[[1]]$.nodes
@@ -958,11 +1092,27 @@ plotAll = function(im.fits) {
   
 }
 
+#plots all 
+plotMarkovs = function(im.fits) {
+  single.length <- length(im.fits$results$.markovs)
+  print(single.length)
+  plot.vals <- find_dimensions(single.length + 1)
+  par(mfrow=plot.vals)
+  plotIMGraph(im.fits$results$.global)
+  
+  for (i in 1:single.length) {
+    plotIMGraph(im.fits$results$.markovs[[i]], title=paste("Graph ", i))
+  }
+  
+}
+
 ### GLOBAL VAR
 
 #trueIM <- 100
+options(warn = 0)
 trueIM <- new.env()
 assign("score", 100, env=trueIM)
 assign("isLocalIM", FALSE, env=trueIM)
 assign("numDatasets", 1, env=trueIM)
 assign("global.edges", list(), env=trueIM)
+assign("markovs", list(), env=trueIM)

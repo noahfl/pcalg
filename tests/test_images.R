@@ -39,7 +39,7 @@ create_im_dags <- function(num_sets) {
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
     #inject noise into DAGs using rnorm
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.1),5000,8), g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.5),5000,8), g = gGtrue)
     data_list[[i]] <- set8
     #increment start seed
     start_seed = start_seed + 2000
@@ -89,11 +89,13 @@ find_error <- function(graph) {
   
   true <- inEdgeList(gmG8$g)
   
+  graph <- inEdgeList(graph)
+  
   positives <- 0
   true_positives <- 0
   false_positives <- 0
   false_negatives <- 0
-  
+  print(graph)
   for (i in 1:length(graph)) {
       for (j in 1:length(graph[[i]])) {
 
@@ -139,18 +141,23 @@ plot_error <- function(results) {
   for (i in 1:length(results)) {
     #calculate f-measures for each graph in the set
     f_list <- list()
-    for (k in 1:length(results[[i]]$results)) {
-      #use 1 minus error for the sake of presentation
-      f_list[[k]] <- 1 - find_error(results[[i]]$results[[k]][[2]]$.in.edges)
-
-    }
+    # for (k in 1:length(results[[i]])) {
+    #   #use 1 minus error for the sake of presentation
+    #   print(results[[i]][[k]])
+    #   f_list[[k]] <- 1 - find_error(results[[i]][[k]]$results$.global$.in.edges)
+    # 
+    # }
     #print(f_list)
     #use mean error (although should all be the same) for graph
-    inv_measures[[i]] <- mean(unlist(f_list))
+    #inv_measures[[i]] <- mean(unlist(f_list))
+    print(results[[i]]$results$.global$.graph)
+    inv_measures[[i]] <- 1 - find_error(results[[i]]$results$.global$.graph)
+    print(inv_measures[[i]])
   }
 
   #cannot be in list form for plotting
   plot_measures <- unlist(inv_measures)
+  print(plot_measures)
   
   plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
   axis(1, at=1:5)
@@ -159,7 +166,7 @@ plot_error <- function(results) {
 #driver for individual GES-like runs
 driver <- function() {
   #change to how many graphs you want
-  num_sets <- 3
+  num_sets <- 1
   
   gmG8 <- get_gmg()
   
@@ -190,6 +197,9 @@ driver <- function() {
   #plot results
   par(mfrow=c(1,2))
   plotIMGraph(im_fits$results$.global)
+  plotAll(im_fits)
+  
+  plotMarkovs(im_fits)
 }
 
 driver_prob <- function() {
@@ -201,17 +211,18 @@ driver_prob <- function() {
   #create DAGS
   #im_run_dags <- create_im_dags(num_sets)
   
-  dataset1 <- make_data(0.3)
+  dataset1 <- make_data(0.29)
   dataset2 <- make_data(0.3)
-  dataset3 <- make_data(0.3)
+  dataset3 <- make_data(0.31)
   
   #create score objects
-  #im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
-  im_run_scores <- create_scores(list(dataset1))
+  im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
+  #im_run_scores <- create_scores(list(dataset1))
   #run IMaGES
   im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
   
   
+  plotAll(im_fits)
   plotIMGraph(im_fits$results$.global)
   
   #plot results
@@ -246,12 +257,12 @@ plot_driver <- function() {
   #calculates errors for each of the result sets
   plot_error(result_sets)
   
-  #plots individual sets (might creash computer as it's a lot of plots)
-  for (k in 1:length(result_sets)) {
-    for (i in 1:length(result_sets[[k]])) {
-      plot_graph(result_sets[[k]]$results[[i]][[2]])
-    }
-  }
+  # #plots individual sets (might creash computer as it's a lot of plots)
+  # for (k in 1:length(result_sets)) {
+  #   for (i in 1:length(result_sets[[k]])) {
+  #     plot_graph(result_sets[[k]]$results[[i]][[2]])
+  #   }
+  # }
   
   
 }
@@ -262,7 +273,9 @@ autism_driver <- function() {
   sapply(list.files(pattern="[.]R$", path="R/", full.names=TRUE), source);
   
   #get filenames 
+  #filenames <- list.files("test/14-19", pattern="SB*", full.names=TRUE)
   filenames <- list.files("test/steve", pattern="autism*", full.names=TRUE)
+  
   matrices = list()
   
   #import data
@@ -275,13 +288,22 @@ autism_driver <- function() {
     
   }
   
+
+  
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=5)
+  results = new("IMaGES", matrices = matrices, penalty=3)
   
   plotIMGraph(results$results$.global)
   plotIMGraph(results$results$.alt)
   
   plotAll(results)
+  
+  par(mfrow=c(2,5))
+  for (i in 1:length(matrices)) {
+    #corrplot(cor(matrices[[i]]), type = "upper", 
+    #         tl.col = "black", tl.srt = 45)#, is.corr=FALSE)
+    cor(matrices[[i]])
+  }
   
   #plot resulting DAGs
   # for (i in 1:length(results)) {
@@ -310,7 +332,7 @@ powerball_driver <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=1)
+  results = new("IMaGES", matrices = matrices, penalty=3)
   
   plotIMGraph(results$results$.global)
   
