@@ -166,7 +166,7 @@ plot_error <- function(results) {
 #driver for individual GES-like runs
 driver <- function() {
   #change to how many graphs you want
-  num_sets <- 1
+  num_sets <- 3
   
   gmG8 <- get_gmg()
   
@@ -291,11 +291,12 @@ autism_driver <- function() {
 
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=3)
+  results = new("IMaGES", matrices = matrices, penalty=3, num.markovs=5)
+  
   
   plotIMGraph(results$results$.global)
-  plotIMGraph(results$results$.alt)
-  
+  #plotIMGraph(results$results$.alt)
+  plotMarkovs(results)
   plotAll(results)
   
   par(mfrow=c(2,5))
@@ -336,6 +337,7 @@ powerball_driver <- function() {
   
   plotIMGraph(results$results$.global)
   
+  plotMarkovs(results)
   
   #plot resulting DAGs
   # for (i in 1:length(results)) {
@@ -370,6 +372,7 @@ test_dataset <- function() {
   
   plotIMGraph(results$results$.global)
   plotAll(results)
+  plotMarkovs(results)
   
   #plot resulting DAGs
   # for (i in 1:length(results)) {

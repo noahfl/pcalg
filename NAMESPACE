@@ -1,4 +1,4 @@
-#useDynLib(imagestest, .registration = TRUE)
+useDynLib(IMaGES, .registration = TRUE)
 
 ###----- Imports ------------------------------------------------------
 
@@ -143,11 +143,11 @@ importFrom("Rgraphviz", agopen)
 #       ## --- end{Alain}
 #       fciPlus,
 #       lingam, LINGAM,
-#       randDAG,
+#      randDAG,
 #       unifDAG,
 #       unifDAG.approx,
 #       gac,
-#       ## no longer: use as(*,"amat")
+#      ## no longer: use as(*,"amat")
 #       ##  displayAmat,
 #       pdag2allDags,
 #       possDe,
@@ -156,9 +156,15 @@ importFrom("Rgraphviz", agopen)
 #       addBgKnowledge,
 #       adjustment,
 #       isValidGraph,
+#       IMaGES,
+#       plotIMGraph,
+#       plotAll,
+#       plotMarkovs)
+
 export(IMaGES,
        plotIMGraph,
-       plotAll)
+       plotAll,
+       plotMarkovs)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------

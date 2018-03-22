@@ -27,12 +27,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"localScore",          (DL_FUNC) &localScore,          5},
     {"optimalTarget",       (DL_FUNC) &optimalTarget,       2},
     {"representative",      (DL_FUNC) &representative,      1},
-    {"greedyStepRFunc",     (DL_FUNC) &greedyStepRFunc,     1},
+    {"greedyStepRFunc",     (DL_FUNC) &greedyStepRFunc,     4},
     {"causalInferenceEdge", (DL_FUNC) &causalInferenceEdge, 5},
     {NULL, NULL, 0}
 };
 
-void R_init_pcalg(DllInfo *dll)
+void R_init_IMaGES(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);

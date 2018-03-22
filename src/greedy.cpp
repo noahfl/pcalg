@@ -1237,8 +1237,8 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 	dout.level(1) << "== starting forward phase ("
 			<< (adaptive ? "" : "not ") << "adaptive)...\n";
 	
-	std::cout << "== starting forward phase ("
-               << (adaptive ? "" : "not ") << "adaptive)...\n";
+	//std::cout << "== starting forward phase ("
+  //             << (adaptive ? "" : "not ") << "adaptive)...\n";
 
 	// Initialize optimal score gain
 	optInsertion.score = _minScoreDiff;
@@ -1279,8 +1279,8 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 		dout.level(1) << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
 				<< optInsertion.clique << ", S = " << optInsertion.score << "\n";
 		
-		std::cout << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
-                << optInsertion.clique << ", S = " << optInsertion.score << "\n";
+		//std::cout << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
+    //            << optInsertion.clique << ", S = " << optInsertion.score << "\n";
 
 		uint u_opt = optInsertion.source;
 		EdgeOperationLogger edgeLogger;
@@ -1383,7 +1383,7 @@ bool EssentialGraph::greedyForward(const ForwardAdaptiveFlag adaptive)
 			// Unregister logger
 			removeLogger(&edgeLogger);
 			
-			std::cout << "Done with greedyForward()";
+			//std::cout << "Done with greedyForward()";
 		}
 
 		return true;
@@ -1402,8 +1402,8 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyForwardEdge(const Fo
   dout.level(1) << "== starting forward phase ("
                 << (adaptive ? "" : "not ") << "adaptive)...\n";
   
-  std::cout << "== starting forward phase ("
-            << (adaptive ? "" : "not ") << "adaptive)...\n";
+  //std::cout << "== starting forward phase ("
+  //          << (adaptive ? "" : "not ") << "adaptive)...\n";
   
   // Initialize optimal score gain
   optInsertion.score = _minScoreDiff;
@@ -1444,8 +1444,8 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyForwardEdge(const Fo
     dout.level(1) << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
                   << optInsertion.clique << ", S = " << optInsertion.score << "\n";
     
-    std::cout << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
-              << optInsertion.clique << ", S = " << optInsertion.score << "\n";
+    //std::cout << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
+    //          << optInsertion.clique << ", S = " << optInsertion.score << "\n";
     
     uint u_opt = optInsertion.source;
     EdgeOperationLogger edgeLogger;
@@ -1548,7 +1548,7 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyForwardEdge(const Fo
               // Unregister logger
               removeLogger(&edgeLogger);
               
-              std::cout << "Done with greedyForward()";
+              //std::cout << "Done with greedyForward()";
     }
     
     return boost::tuple<uint, uint, std::string>(u_opt, v_opt, "GIES-F");
@@ -1565,7 +1565,7 @@ bool EssentialGraph::greedyBackward()
 	// For DEBUGGING purposes: print phase
 	dout.level(1) << "== starting backward phase...\n" ;
 	
-	std::cout << "== starting backward phase...\n" ;
+	//std::cout << "== starting backward phase...\n" ;
 
 	// Initialize optimal score gain
 	optDeletion.score = _minScoreDiff;
@@ -1593,8 +1593,8 @@ bool EssentialGraph::greedyBackward()
 		dout.level(1) << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
 				<< optDeletion.clique << ", S = " << optDeletion.score << "\n";
 		
-		std::cout << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
-                << optDeletion.clique << ", S = " << optDeletion.score << "\n";
+		//std::cout << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
+    //            << optDeletion.clique << ", S = " << optDeletion.score << "\n";
 		remove(optDeletion.source, v_opt, optDeletion.clique);
 		//getAdjacencyMatrix().print("A = ");
 		return true;
@@ -1611,7 +1611,7 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyBackwardEdge()
   // For DEBUGGING purposes: print phase
   dout.level(1) << "== starting backward phase...\n" ;
   
-  std::cout << "== starting backward phase...\n" ;
+  //std::cout << "== starting backward phase...\n" ;
   
   // Initialize optimal score gain
   optDeletion.score = _minScoreDiff;
@@ -1639,8 +1639,8 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyBackwardEdge()
     dout.level(1) << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
                   << optDeletion.clique << ", S = " << optDeletion.score << "\n";
     
-    std::cout << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
-              << optDeletion.clique << ", S = " << optDeletion.score << "\n";
+    //std::cout << "  deleting edge (" << optDeletion.source << ", " << v_opt << ") with C = "
+    //          << optDeletion.clique << ", S = " << optDeletion.score << "\n";
     remove(optDeletion.source, v_opt, optDeletion.clique);
     //getAdjacencyMatrix().print("A = ");
     return boost::tuple<uint, uint, std::string>(optDeletion.source, v_opt, "GIES-B");
@@ -1656,7 +1656,7 @@ bool EssentialGraph::greedyTurn()
 
 	// For DEBUGGING purposes: print phase
 	dout.level(1) << "== starting turning phase...\n" ;
-	std::cout << "== starting turning phase...\n" ;
+	//std::cout << "== starting turning phase...\n" ;
 
 	// Initialize optimal score gain
 	optTurning.score = _minScoreDiff;
@@ -1685,8 +1685,8 @@ bool EssentialGraph::greedyTurn()
 		dout.level(1) << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
 				<< optTurning.clique << ", S = " << optTurning.score << "\n";
 		
-		std::cout << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
-                << optTurning.clique << ", S = " << optTurning.score << "\n";
+		//std::cout << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
+    //            << optTurning.clique << ", S = " << optTurning.score << "\n";
 		turn(optTurning.source, v_opt, optTurning.clique);
 		//getAdjacencyMatrix().print("A = ");
 		return true;
@@ -1702,7 +1702,7 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyTurnEdge()
   
   // For DEBUGGING purposes: print phase
   dout.level(1) << "== starting turning phase...\n" ;
-  std::cout << "== starting turning phase...\n" ;
+  //std::cout << "== starting turning phase...\n" ;
   
   // Initialize optimal score gain
   optTurning.score = _minScoreDiff;
@@ -1731,8 +1731,8 @@ boost::tuple<uint, uint, std::string> EssentialGraph::greedyTurnEdge()
     dout.level(1) << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
                   << optTurning.clique << ", S = " << optTurning.score << "\n";
     
-    std::cout << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
-              << optTurning.clique << ", S = " << optTurning.score << "\n";
+    //std::cout << "  turning edge (" << v_opt << ", " << optTurning.source << ") with C = "
+    //          << optTurning.clique << ", S = " << optTurning.score << "\n";
     turn(optTurning.source, v_opt, optTurning.clique);
     //getAdjacencyMatrix().print("A = ");
     return boost::tuple<uint, uint, std::string>(optTurning.source, v_opt, "GIES-T");
@@ -1922,7 +1922,7 @@ int EssentialGraph::greedyStepR()
   //   break;
   // }
   
-  std::cout << "optDir: " << optDir << "\n";
+  //std::cout << "optDir: " << optDir << "\n";
   
   return optDir;
 }

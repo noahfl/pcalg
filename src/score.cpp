@@ -109,7 +109,7 @@ double ScoreRFunction::local(const uint vertex, const std::set<uint>& parents) c
 
 	// Call R function for local score
 	double res = Rcpp::as<double>((_rfunction[R_FCN_INDEX_LOCAL_SCORE])(vertex + 1, shiftParents));
-	std::cout << "C++ R local score: " << res << "\n";
+	//std::cout << "C++ R local score: " << res << "\n";
 	return res;
 }
 
@@ -130,7 +130,7 @@ double ScoreRFunction::global(const EssentialGraph& dag) const
 
 	// Call R function for global score
 	double result = Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
-	std::cout << "From C++/score.cpp/ScoreRFunction/global: res = " << result;
+	//std::cout << "From C++/score.cpp/ScoreRFunction/global: res = " << result;
 	return result;
 }
 
@@ -144,7 +144,7 @@ std::vector<double> ScoreRFunction::localMLE(const uint vertex, const std::set<u
 
 	// Return local MLE
 	std::vector<double> result = Rcpp::as< std::vector<double> >(_rfunction[R_FCN_INDEX_LOCAL_MLE](vertex + 1, shiftParents));
-	std::cout << "Local MLE: " << result << "\n";
+	//std::cout << "Local MLE: " << result << "\n";
 	return result;
 }
 
@@ -289,7 +289,7 @@ double ScoreGaussL0PenScatter::global(const EssentialGraph& dag) const
   // Call R function for global score
   
   double result = Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
-  std::cout << "From C++/score.cpp/ScoreGaussL0PenScatter/global: res = " << result;
+  //std::cout << "From C++/score.cpp/ScoreGaussL0PenScatter/global: res = " << result;
   return result;
 }
 
@@ -332,7 +332,7 @@ std::vector<double> ScoreGaussL0PenScatter::localMLE(const uint vertex, const st
 	}
 
   //dout.level(3) << "Local MLE: " << result << "\n";
-  std::cout << "Local MLE: " << result << "\n";
+  //std::cout << "Local MLE: " << result << "\n";
 	return result;
 }
 
@@ -457,7 +457,7 @@ double ScoreGaussL0PenRaw::global(const EssentialGraph& dag) const
   
   // Call R function for global score
   double result = Rcpp::as<double>(_rfunction[R_FCN_INDEX_GLOBAL_SCORE](inEdges));
-  std::cout << "From C++/score.cpp/ScoreGaussL0PenRaw/global: res = " << result;
+  //std::cout << "From C++/score.cpp/ScoreGaussL0PenRaw/global: res = " << result;
   return result;
 }
 
@@ -511,7 +511,7 @@ std::vector<double> ScoreGaussL0PenRaw::localMLE(const uint vertex, const std::s
 	}
 
 	dout.level(3) << "Local MLE: " << result << "\n";
-	std::cout << "Local MLE: " << result << "\n";
+	//std::cout << "Local MLE: " << result << "\n";
 	return result;
 }
 

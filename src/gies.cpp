@@ -106,7 +106,7 @@ RcppExport SEXP globalScore(
 	// Calculate global score
 	double result = score->global(castGraph(argInEdges));
 	// TODO: check why this leads to a segfault!!!!
-	std::cout << "Result from gies.cpp/globalScore: " << result;
+	//std::cout << "Result from gies.cpp/globalScore: " << result;
 	delete score;
 	return Rcpp::wrap(result);
 
@@ -228,7 +228,7 @@ RcppExport SEXP greedyStepRFunc(
     SEXP argOptions
 )
 {
-  std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
+  //std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
   
   BEGIN_RCPP
   
@@ -262,7 +262,7 @@ RcppExport SEXP greedyStepRFunc(
   std::vector<std::string> stepNames;
   std::stringstream ss;
   
-  std::cout << "Reached mid level of greedyStepR\n";
+  //std::cout << "Reached mid level of greedyStepR\n";
   
   // Cast option for limits in vertex degree
   dout.level(2) << "  Casting maximum vertex degree...\n";
@@ -367,7 +367,7 @@ RcppExport SEXP greedyStepRFunc(
   
 //std::string res = std::to_string(dir);
 
-  std::cout << "RES: " << res << "\n";
+  //std::cout << "RES: " << res << "\n";
   return Rcpp::wrap(res);
   
   END_RCPP
@@ -431,7 +431,7 @@ RcppExport SEXP causalInferenceEdge(
   std::vector<std::string> stepNames;
   std::stringstream ss;
   
-  std::cout << "Reached causalInference. Algorithm: " << algName << "\n";
+  //std::cout << "Reached causalInference. Algorithm: " << algName << "\n";
   
   // Cast option for limits in vertex degree
   dout.level(2) << "  Casting maximum vertex degree...\n";
@@ -536,9 +536,9 @@ RcppExport SEXP causalInferenceEdge(
   // }
   boost::tuple<uint, uint, std::string> edgeChange;
   // Single phase or step of GIES
-  std::cout << "Made it to GIES EDGE\n";
+  //std::cout << "Made it to GIES EDGE\n";
   if (algName == "GIES-F" || algName == "GIES-B" || algName == "GIES-T") {
-    std::cout << "Performing " << algName << "...\n";
+    //std::cout << "Performing " << algName << "...\n";
     
     // Enable caching, if requested
     if (options["caching"])
@@ -558,7 +558,7 @@ RcppExport SEXP causalInferenceEdge(
       stepNames.push_back("turning1");
     }
   }
-  std::cout << "Edge change: " << edgeChange.get<0>() << ", " << edgeChange.get<1>() << ", " << edgeChange.get<2>() << "\n";
+  //std::cout << "Edge change: " << edgeChange.get<0>() << ", " << edgeChange.get<1>() << ", " << edgeChange.get<2>() << "\n";
   // // Single one or several steps of GIES into either direction
   // else if (algName == "GIES-STEP") {
   //   dout.level(1) << "Performing " << algName << "...\n";
@@ -714,7 +714,7 @@ RcppExport SEXP causalInference(
 	std::vector<std::string> stepNames;
 	std::stringstream ss;
 	
-	std::cout << "Reached causalInference. Algorithm: " << algName << "\n";
+	//std::cout << "Reached causalInference. Algorithm: " << algName << "\n";
 
 	// Cast option for limits in vertex degree
 	dout.level(2) << "  Casting maximum vertex degree...\n";

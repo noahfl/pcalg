@@ -747,7 +747,7 @@ setRefClass("GaussL0penIntScore",
           ## Store supplied data in sorted form. Make sure data is a matrix for
           ## linear-Gaussian data
           if (!is.matrix(data)) {
-            print(data)
+            #print(data)
             data <- as.matrix(data)
           }
           callSuper(data = data, targets = targets, target.index = target.index, nodes = nodes, ...)
@@ -1122,7 +1122,7 @@ setRefClass("EssGraph",
               forward = "GIES-F",
               backward = "GIES-B",
               turning = "GIES-T")
-          print("calling GES")
+          #print("calling GES")
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,
@@ -1176,7 +1176,7 @@ setRefClass("EssGraph",
           stopifnot(!is.null(score <- getScore()))
           algorithm <- match.arg(algorithm)
           
-          print("entering")
+          #print("entering")
           
           new.graph <- .Call("causalInference",
               .in.edges,
