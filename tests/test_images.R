@@ -291,7 +291,7 @@ autism_driver <- function() {
 
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=3, num.markovs=5)
+  results = new("IMaGES", matrices = matrices, penalty=3)
   
   
   plotIMGraph(results$results$.global)
@@ -366,7 +366,7 @@ test_dataset <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=3)
+  results = new("IMaGES", matrices = matrices, penalty=3, num.markovs=5)
   
   
   

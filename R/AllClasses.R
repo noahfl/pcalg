@@ -583,7 +583,7 @@ setRefClass("Score",
 
 #          } else {
 #            ## Calculate score with the C++ library
-#            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "imagestest")
+#            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "IMaGES")
 #          }
         },
 
@@ -615,7 +615,7 @@ setRefClass("Score",
           } else {
             ## Calculate score with the C++ library
             .Call("globalMLE", c.fcn, pp.dat, dag$.in.edges, c.fcn.options(...),
-                PACKAGE = "imagestest")
+                PACKAGE = "IMaGES")
           }
         }
     )
@@ -888,7 +888,7 @@ setRefClass("GaussL0penIntScore",
           return(ret)
 #          } else {
 #            ## Calculate score with the C++ library
-#            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
+#            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "IMaGES"))
 #          } # IF c.fcn
         },
 
@@ -950,7 +950,7 @@ setRefClass("GaussL0penIntScore",
             }
           #} else {
             ## Calculate score with the C++ library
-          #  return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "imagestest"))
+          #  return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "IMaGES"))
           #} # IF c.fcn
         }
         )
@@ -1129,7 +1129,7 @@ setRefClass("EssGraph",
               alg.name,
               score$c.fcn,
               causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, ...),
-              PACKAGE = "imagestest")
+              PACKAGE = "IMaGES")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
 
@@ -1157,7 +1157,7 @@ setRefClass("EssGraph",
               alg.name,
               score$c.fcn,
               causal.inf.options(caching = FALSE),
-              PACKAGE = "imagestest")
+              PACKAGE = "IMaGES")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
 
@@ -1184,7 +1184,7 @@ setRefClass("EssGraph",
               algorithm,
               score$c.fcn,
               causal.inf.options(...),
-              PACKAGE = "imagestest")
+              PACKAGE = "IMaGES")
 
           if (identical(new.graph, "interrupt"))
             return(FALSE)
@@ -1200,7 +1200,7 @@ setRefClass("EssGraph",
           stopifnot(!is.null(score <- getScore()))
 
           result <- score$create.dag()
-          result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "imagestest")
+          result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "IMaGES")
           result$.params <- score$global.fit(result)
 
           return(result)
@@ -1211,7 +1211,7 @@ setRefClass("EssGraph",
         #' @param   max.size    maximum target size; allowed values: 1, p (= # nodes)
         ## TODO document that function... or better: provide a documented wrapper function
         opt.target = function(max.size) {
-          .Call("optimalTarget", .in.edges, max.size, PACKAGE = "imagestest")
+          .Call("optimalTarget", .in.edges, max.size, PACKAGE = "IMaGES")
         }
         ))
 

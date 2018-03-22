@@ -1,5 +1,5 @@
 IMaGES <- setRefClass("IMaGES",
-                      fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list", scores = "list", num.markovs = "numeric"),
+                      fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list", scores = "list"),#, num.markovs = "numeric"),
                       
                       # validity <- function(object) {
                       #   return(TRUE)
