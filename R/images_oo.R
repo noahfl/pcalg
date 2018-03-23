@@ -628,6 +628,29 @@ IMaGES <- setRefClass("IMaGES",
                           
                         },
                         
+                        #fixes edge lists so there are double-directed edges
+                        #
+                        #
+                        fix.edges = function(graph) {
+                          new.graph <- rep(list(c()), length(graph))
+                          for (i in 1:length(graph)) {
+                            #if there are edges going to this vertex
+                            if (length(graph[[i]]) > 0) {
+                              #for each edge going to vertex i
+                              for (j in (1:length(graph[[i]]))) {
+                                #vertices can't point to themselves
+                                if (i != j) {
+                                  #adding edges that only point forward -- hacky fix for now
+                                  new.graph[[i]] <- append(new.graph[[i]], graph[[i]][[j]])
+                                }
+                                
+                              }
+                            }
+                          }
+                          new.graph
+                        },
+                        
+                        
                         #compares graphs and returns true if they're identical 
                         #and false otherwise
                         is.identical = function(graph1, graph2) {
@@ -870,6 +893,19 @@ IMaGES$methods(
     }
     
     #turn.step()
+    print("BEFORE")
+    print(.graphs[[1]]$.in.edges)
+    graphs[[1]]$.in.edges <- fix.edges(graphs[[1]]$.in.edges)
+    print("AFTER")
+    print(graphs[[1]]$.in.edges)
+    
+    if (length(.graphs) > 1) {
+      for (i in 2:length(.graphs)) {
+        .graphs[[i]]$.in.edges <- graphs[[1]]$.in.edges
+      }
+    }
+    
+    
     
     
     # for (i in 1:ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data)) {
@@ -927,7 +963,7 @@ IMaGES$methods(
       
       attempt <- tryCatch(
         {
-          converted.markov <- convert(list(.in.edges = trueIM$markovs[[i]]$.graph, .nodes = .graphs[[1]]$.nodes))
+          converted.markov <- convert(list(.in.edges = fix.edges(trueIM$markovs[[i]]$.graph), .nodes = .graphs[[1]]$.nodes))
           markovs[[i]] <- list(.graph=converted.markov, .params = apply.sem(converted.markov, trueIM$markovs[[i]]$.data))
         },
         error = function(e) {
