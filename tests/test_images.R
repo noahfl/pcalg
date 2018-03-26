@@ -39,6 +39,7 @@ create_im_dags <- function(num_sets) {
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
     #inject noise into DAGs using rnorm
+    #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.5),5000,8), g = gGtrue)
     set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.5),5000,8), g = gGtrue)
     data_list[[i]] <- set8
     #increment start seed
@@ -211,9 +212,9 @@ driver_prob <- function() {
   #create DAGS
   #im_run_dags <- create_im_dags(num_sets)
   
-  dataset1 <- make_data(0.29)
+  dataset1 <- make_data(0.3)
   dataset2 <- make_data(0.3)
-  dataset3 <- make_data(0.31)
+  dataset3 <- make_data(0.3)
   
   #create score objects
   im_run_scores <- create_scores(list(dataset1,dataset2,dataset3))
@@ -234,7 +235,7 @@ driver_prob <- function() {
 #driver for calculation of errors across runs of increasing size
 plot_driver <- function() {
   #change to number of sets to iterate up to
-  num_sets <- 10
+  num_sets <- 5
   
   #generate gmG8 data
   gmG8 <- get_gmg()
@@ -333,7 +334,7 @@ powerball_driver <- function() {
   }
   
   #run IMaGES on data
-  results = new("IMaGES", matrices = matrices, penalty=3)
+  results = new("IMaGES", matrices = matrices, penalty=3, num.markovs=6)
   
   plotIMGraph(results$results$.global)
   

@@ -1,5 +1,5 @@
 IMaGES <- setRefClass("IMaGES",
-                      fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list", scores = "list"),#, num.markovs = "numeric"),
+                      fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list", scores = "list", num.markovs = "numeric"),
                       
                       # validity <- function(object) {
                       #   return(TRUE)
@@ -638,12 +638,10 @@ IMaGES <- setRefClass("IMaGES",
                             if (length(graph[[i]]) > 0) {
                               #for each edge going to vertex i
                               for (j in (1:length(graph[[i]]))) {
-                                #vertices can't point to themselves
-                                if (i != j) {
+                                if (!((i %in% graph[[graph[[i]][[j]]]]) && (i < graph[[i]][[j]]))) {
                                   #adding edges that only point forward -- hacky fix for now
                                   new.graph[[i]] <- append(new.graph[[i]], graph[[i]][[j]])
                                 }
-                                
                               }
                             }
                           }
@@ -741,9 +739,10 @@ IMaGES <- setRefClass("IMaGES",
                                                           #.params=apply.sem(converted, graph$.score$pp.dat$data))
                               
                               #print(trueIM$markovs[[i]], )
+                              num.markovs <<- num.markovs
                               
-                              for (k in trueIM$num.markovs - 1:i + 1) {
-                                if (i == trueIM$num.markovs) {
+                              for (k in num.markovs - 1:i + 1) {
+                                if (i == num.markovs) {
                                   trueIM$markovs[[i]] <- markov
                                   break
                                 }
@@ -794,6 +793,7 @@ IMaGES <- setRefClass("IMaGES",
                           graph.nodes <- igraph.from.graphNEL(converted)
                           edge.list <- get.edgelist(graph.nodes)
                           #print(edge.list)
+                          #print(edge.list)
                           model <- paste(edge.list[,1], "~", edge.list[,2])
                           #print(model)
                           fit <- sem(model, data=data.frame(dataset))
@@ -806,7 +806,7 @@ IMaGES <- setRefClass("IMaGES",
                         },
                         
                         average.sem = function(params.list) {
-                          print(length(params.list))
+                          #print(length(params.list))
                           base <- params.list[[1]]
                           if (length(params.list) == 1) {
                             return(base)
@@ -819,9 +819,9 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           
                           for (i in 1:length(params.list)) {
-                            print(paste("base[", i,"] before: ", base[i]))
+                            #print(paste("base[", i,"] before: ", base[i]))
                             base[i] <- round((base[i] / length(params.list)),2)
-                            print(paste("base[", i,"] after: ", base[i]))
+                            #print(paste("base[", i,"] after: ", base[i]))
                           }
                           return(base)
                         }
@@ -845,21 +845,17 @@ IMaGES$methods(
         
         #print("adding score")
         rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]], lambda = penalty)
-        #print(rawscores[[i]]$pp.dat$lambda)
       }  
     }
     else {
       assign("numDatasets", length(scores), envir=trueIM)
       for (i in 1:length(scores)) {
-        #print(paste("length of scores: ", length(scores)))
-        #print(paste("num rows: ", nrow(scores[[i]]$pp.dat$data)))
-        #scores[[i]]$pp.dat$lambda <- scores[[i]]$pp.dat$lambda * penalty
         scores[[i]]$pp.dat$lambda <- penalty
         rawscores[[i]] <- scores[[i]]
       }
     }
     
-    trueIM$num.markovs <- num.markovs
+    #trueIM$num.markovs <- num.markovs
     penalty <<- penalty
     .rawscores <<- rawscores
     
@@ -877,7 +873,7 @@ IMaGES$methods(
     #imscore <<- IMScore()
     #imscore <<- IMScore()
     
-    print("---------------")
+    print("Running...")
     
     #create list of size num.markovs
     #initialize to lowest signed int value because you can't compare
@@ -886,22 +882,16 @@ IMaGES$methods(
     #print(trueIM$markovs)
     
     for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
-      # if (!run()) {
-      #   break
-      # }
+      #run IMaGES
       run()
     }
     
-    #turn.step()
-    print("BEFORE")
-    print(.graphs[[1]]$.in.edges)
-    graphs[[1]]$.in.edges <- fix.edges(graphs[[1]]$.in.edges)
-    print("AFTER")
-    print(graphs[[1]]$.in.edges)
+    #####turn.step()
+    .graphs[[1]]$.in.edges <- fix.edges(.graphs[[1]]$.in.edges)
     
     if (length(.graphs) > 1) {
       for (i in 2:length(.graphs)) {
-        .graphs[[i]]$.in.edges <- graphs[[1]]$.in.edges
+        .graphs[[i]]$.in.edges <- .graphs[[1]]$.in.edges
       }
     }
     
@@ -929,9 +919,9 @@ IMaGES$methods(
     
     single.graphs <- list()
     params.list <- list()
-    converted <- convert(list(.in.edges = trueIM$global.edges, .nodes = .graphs[[1]]$.nodes))
+    converted <- convert(list(.in.edges = graphs[[1]]$.in.edges, .nodes = .graphs[[1]]$.nodes))
     #print(.graphs[[1]]$.in.edges)
-    alt_converted <- convert(list(.in.edges = .graphs[[1]]$.in.edges, .nodes = .graphs[[1]]$.nodes))
+    #alt_converted <- convert(list(.in.edges = .graphs[[1]]$.in.edges, .nodes = .graphs[[1]]$.nodes))
     for (i in 1:length(.graphs)) {
       #create .in.edges structure and convert it to graphNEL object
       #converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
@@ -946,13 +936,13 @@ IMaGES$methods(
     
     #print(single.graphs[[i]]$.params)
     
-    print("---------------")
+    print("Done.")
     
     #imscore <<- IMScore()
     
     #switched these for the time being
-    global <- list(.graph = alt_converted, .params = average.sem(params.list))
-    alt <- list(.graph = converted, .params = average.sem(params.list))
+    global <- list(.graph = converted, .params = average.sem(params.list))
+    #alt <- list(.graph = converted, .params = average.sem(params.list))
     
     markovs <- list()
     
@@ -973,7 +963,7 @@ IMaGES$methods(
 
     }
     
-    results <<- list(.global = global, .single.graphs = single.graphs, .alt = alt, .markovs = markovs)
+    results <<- list(.global = global, .single.graphs = single.graphs, .markovs = markovs)
     
     #results$.in.edges <- trueIM$global.edges
     #results$.nodes <- .graphs[[1]]$.nodes
@@ -1262,7 +1252,7 @@ plotMarkovs = function(im.fits) {
   plotIMGraph(im.fits$results$.global)
   
   for (i in 1:single.length) {
-    plotIMGraph(im.fits$results$.markovs[[i]], title=paste("Graph ", i))
+    plotIMGraph(im.fits$results$.markovs[[i]], title=paste("MEC Graph ", i))
   }
   
 }
