@@ -1,0 +1,117 @@
+Script started on Thu 15 Mar 2018 04:06:28 AM EDT
+noah@kwayzar:/data1/noah/git/pcalg/tests$ man script
+[?1049h[?1h=SCRIPT(1)                        User Commands                       SCRIPT(1)[m
+[m
+[1mNAME[0m[m
+       script - make typescript of terminal session[m
+[m
+[1mSYNOPSIS[0m[m
+       [1mscript[0m [options] [[4mfile[24m][m
+[m
+[1mDESCRIPTION[0m[m
+       [1mscript[0m makes a typescript of everything displayed on your terminal.  It[m
+       is useful for students who need a hardcopy  record  of  an  interactive[m
+       session  as  proof  of  an  assignment,  as  the typescript file can be[m
+       printed out later with [1mlpr[0m(1).[m
+[m
+       If the argument [4mfile[24m is given, [1mscript[0m saves the dialogue in this  [4mfile[24m.[m
+       If no filename is given, the dialogue is saved in the file [1mtypescript[0m.[m
+[m
+[1mOPTIONS[0m[m
+       [1m-a[0m, [1m--append[0m[m
+              Append  the output to [4mfile[24m or to [1mtypescript[0m, retaining the prior[m
+              contents.[m
+[m
+[3m Manual page script(1) line 1 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-c[0m, [1m--command[0m [4mcommand[24m[m
+[3m Manual page script(1) line 2 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Run the [4mcommand[24m rather than an interactive shell.  This makes it[m
+[3m Manual page script(1) line 3 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              easy  for  a  script  to  capture  the  output of a program that[m
+[3m Manual page script(1) line 4 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              behaves differently when its stdout is not a tty.[m
+[3m Manual page script(1) line 5 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 6 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-e[0m, [1m--return[0m[m
+[3m Manual page script(1) line 7 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Return the exit code of the child process.  Uses the same format[m
+[3m Manual page script(1) line 8 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              as bash termination on signal termination exit code is 128+n.[m
+[3m Manual page script(1) line 9 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 10 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-f[0m, [1m--flush[0m[m
+[3m Manual page script(1) line 11 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Flush  output  after  each write.  This is nice for telecoopera‐[m
+[3m Manual page script(1) line 12 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              tion: one person does `mkfifo foo; script -f foo',  and  another[m
+[3m Manual page script(1) line 13 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              can supervise real-time what is being done using `cat foo'.[m
+[3m Manual page script(1) line 14 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 15 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m--force[0m[m
+[3m Manual page script(1) line 16 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Allow  the default output destination, i.e. the typescript file,[m
+[3m Manual page script(1) line 17 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              to be a hard or symbolic link.  The command will follow  a  sym‐[m
+[3m Manual page script(1) line 18 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              bolic link.[m
+[3m Manual page script(1) line 19 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 20 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-q[0m, [1m--quiet[0m[m
+[3m Manual page script(1) line 21 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Be  quiet  (do not write start and done messages to either stan‐[m
+[3m Manual page script(1) line 22 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              dard output or the typescript file).[m
+[3m Manual page script(1) line 23 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 24 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-t[0m, [1m--timing[0m[=[4mfile[24m][m
+[3m Manual page script(1) line 25 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Output timing data to standard error, or  to  [4mfile[24m  when  given.[m
+[3m Manual page script(1) line 26 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              This  data contains two fields, separated by a space.  The first[m
+[3m Manual page script(1) line 27 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              field indicates how much time elapsed since the previous output.[m
+[3m Manual page script(1) line 28 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              The  second field indicates how many characters were output this[m
+[3m Manual page script(1) line 29 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              time.  This information can be used to replay  typescripts  with[m
+[3m Manual page script(1) line 30 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              realistic typing and output delays.[m
+[3m Manual page script(1) line 31 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 32 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-V[0m, [1m--version[0m[m
+[3m Manual page script(1) line 33 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Display version information and exit.[m
+[3m Manual page script(1) line 34 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 35 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1m-h[0m, [1m--help[0m[m
+[3m Manual page script(1) line 36 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              Display help text and exit.[m
+[3m Manual page script(1) line 37 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 38 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[1mNOTES[0m[m
+[3m Manual page script(1) line 39 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       The script ends when the forked shell exits (a [4mcontrol-D[24m for the Bourne[m
+[3m Manual page script(1) line 40 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       shell ([1msh[0m(1)), and [4mexit[24m, [4mlogout[24m or [4mcontrol-d[24m (if [4mignoreeof[24m is not  set)[m
+[3m Manual page script(1) line 41 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       for the C-shell, [1mcsh[0m(1)).[m
+[3m Manual page script(1) line 42 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 43 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       Certain  interactive  commands,  such  as  [1mvi[0m(1), create garbage in the[m
+[3m Manual page script(1) line 44 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       typescript file.  [1mscript[0m works best with commands that do  not  manipu‐[m
+[3m Manual page script(1) line 45 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       late the screen, the results are meant to emulate a hardcopy terminal.[m
+[3m Manual page script(1) line 46 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 47 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       It  is  not  recommended  to  run [1mscript[0m in non-interactive shells. The[m
+[3m Manual page script(1) line 48 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       inner shell of [1mscript[0m is always interactive, and  this  could  lead  to[m
+[3m Manual page script(1) line 49 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       unexpected results. If you use [1mscript[0m in the shell initialization file,[m
+[3m Manual page script(1) line 50 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       you have to avoid entering an infinite loop. Use e.  g.  profile  file,[m
+[3m Manual page script(1) line 51 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       which is read by login shells only:[m
+[3m Manual page script(1) line 52 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 53 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              if test -t 0 ; then[m
+[3m Manual page script(1) line 54 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K                  script[m
+[3m Manual page script(1) line 55 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K                  exit[m
+[3m Manual page script(1) line 56 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              fi[m
+[3m Manual page script(1) line 57 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 58 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       You should also avoid use of script in command pipes, as [1mscript[0m can[m
+[3m Manual page script(1) line 59 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       read more input than you would expect.[m
+[3m Manual page script(1) line 60 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 61 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[1mENVIRONMENT[0m[m
+[3m Manual page script(1) line 62 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       The following environment variable is utilized by [1mscript[0m:[m
+[3m Manual page script(1) line 63 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 64 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1mSHELL[0m  If the variable [1mSHELL[0m exists, the shell forked by [1mscript[0m will be[m
+[3m Manual page script(1) line 65 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              that shell.  If [1mSHELL[0m is not set, the Bourne shell is assumed.[m
+[3m Manual page script(1) line 66 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K              (Most shells set this variable automatically).[m
+[3m Manual page script(1) line 67 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 68 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[1mSEE[0m [1mALSO[0m[m
+[3m Manual page script(1) line 69 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1mcsh[0m(1) (for the [4mhistory[24m mechanism), [1mscriptreplay[0m(1).[m
+[3m Manual page script(1) line 70 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 71 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[1mHISTORY[0m[m
+[3m Manual page script(1) line 72 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       The [1mscript[0m command appeared in 3.0BSD.[m
+[3m Manual page script(1) line 73 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 74 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[1mBUGS[0m[m
+[3m Manual page script(1) line 75 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1mscript[0m places [4meverything[24m in the log file, including linefeeds and[m
+[3m Manual page script(1) line 76 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       backspaces.  This is not what the naive user expects.[m
+[3m Manual page script(1) line 77 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 78 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       [1mscript[0m is primarily designed for interactive terminal sessions, it's[m
+[3m Manual page script(1) line 79 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       possible that when stdin is not a terminal (for example "echo foo |[m
+[3m Manual page script(1) line 80 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       script") then all session hung ups, because interactive shell within[m
+[3m Manual page script(1) line 81 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       script session miss EOF and the [1mscript[0m has no clue when close the ses‐[m
+[3m Manual page script(1) line 82 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       sion. See the NOTES section for more information.[m
+[3m Manual page script(1) line 83 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 84 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[1mAVAILABILITY[0m[m
+[3m Manual page script(1) line 85 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       The script command is part of the util-linux package and is available[m
+[3m Manual page script(1) line 86 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       from Linux Kernel Archive ⟨ftp://ftp.kernel.org/pub/linux/utils/util-[m
+[3m Manual page script(1) line 87 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K       linux/⟩.[m
+[3m Manual page script(1) line 88 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[m
+[3m Manual page script(1) line 89 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[Kutil-linux                         June 2014                         SCRIPT(1)[m
+[3m Manual page script(1) line 90 (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K [KESCESC[KOO[KBB[K[K[3m Manual page script(1) line 90/111 (END) (press h for help or q to quit)[23m[K[K[?1l>[?1049lnoah@kwayzar:/data1/noah/git/pcalg/tests$ exit
+exit
+
+Script done on Thu 15 Mar 2018 04:06:49 AM EDT
