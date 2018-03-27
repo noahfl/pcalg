@@ -1,6 +1,6 @@
 ## Load predefined data
 get_gmg <- function() {
-  set.seed(40)
+  set.seed(50)
   p <- 8
   n <- 2000
   ## true DAG:
@@ -221,7 +221,7 @@ create_im_dags <- function(num_sets) {
 create_all <- function(num_sets) {
   gmG8 <- get_gmg()
   #initial seed for generation of dataset
-  start_seed <- 40
+  start_seed <- 50
   set.seed(start_seed)
   data_list <- list()
   
@@ -233,10 +233,10 @@ create_all <- function(num_sets) {
   
   for (i in 1:num_sets) {
     set.list = list()
-    for (k in 1:num_sets) {
+    for (k in 1:i) {
       #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
       #inject noise into DAGs using rnorm
-      set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=1.8),n,p), g = gGtrue)
+      set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=1),n,p), g = gGtrue)
       #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
       #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
       set.list[[k]] <- set8
@@ -577,7 +577,7 @@ plot_driver <- function() {
 
 test_driver <- function() {
   #change to number of sets to iterate up to
-  num_sets <- 10
+  num_sets <- 25
   
   #generate gmG8 data
   #gmG8 <- get_gmg()
@@ -603,7 +603,7 @@ test_driver <- function() {
     
     
   #calculates errors for each of the result sets
-  #plot_error(result_sets)
+  plot_error(result_sets)
   plot_both(result_sets)
   
   # #plots individual sets (might creash computer as it's a lot of plots)
