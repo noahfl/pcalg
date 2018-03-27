@@ -2,7 +2,7 @@
 get_gmg <- function() {
   set.seed(40)
   p <- 8
-  n <- 500
+  n <- 2000
   ## true DAG:
   vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
   gGtrue <- randomDAG(p, prob = 0.3, V = vars)
@@ -225,17 +225,18 @@ create_all <- function(num_sets) {
   set.seed(start_seed)
   data_list <- list()
   
+  p <- 8
+  n <- 2000
+  ## true DAG:
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+  gGtrue <- gmG8$g
+  
   for (i in 1:num_sets) {
     set.list = list()
     for (k in 1:num_sets) {
-      p <- 8
-      n <- 500
-      ## true DAG:
-      vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
-      gGtrue <- gmG8$g
       #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
       #inject noise into DAGs using rnorm
-      set8 <- list(x = rmvDAG(n, gGtrue) + matrix(rnorm(p*n,mean=0,sd=0.01),n,p), g = gGtrue)
+      set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=1.8),n,p), g = gGtrue)
       #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
       #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
       set.list[[k]] <- set8
@@ -329,6 +330,53 @@ find_error <- function(graph) {
   return(f_measure)
 }
 
+find_both <- function(graph) {
+  
+  gmG8 <- get_gmg()
+  
+  true <- inEdgeList(gmG8$g)
+  
+  graph <- inEdgeList(graph)
+  
+  positives <- 0
+  true_positives <- 0
+  false_positives <- 0
+  false_negatives <- 0
+  print(graph)
+  for (i in 1:length(graph)) {
+    for (j in 1:length(graph[[i]])) {
+      
+      if (((length(graph[[i]]) > 0) && (length(true[[i]]) > 0)) && (graph[[i]][[j]] %in% true[[i]])) {
+        positives <- positives + 1
+      }
+      else if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && !(graph[[i]][[j]] %in% true[[i]])) {
+        false_positives <- false_positives + 1
+      }
+    }
+    
+    if (length(true[[i]]) > 0) {
+      for (k in 1:length(true[[i]])) {
+        if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && (true[[i]][[k]] %in% graph[[i]])) {
+          true_positives <- true_positives + 1
+        }
+        else if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && !(true[[i]][[k]] %in% graph[[i]])) {
+          false_negatives <- false_negatives + 1
+        }
+      }
+    }
+  }
+  
+  precision <- true_positives / (true_positives + false_positives)
+  recall <- true_positives / (true_positives + false_negatives)
+  
+  print("made it here")
+  
+  res <- list(.precision=precision, .recall=recall)
+  
+  #f_measure <- 2 * ((precision * recall) / (precision + recall))
+  return(res)
+}
+
 
 #######
 #create accuracy measure
@@ -371,6 +419,54 @@ plot_error <- function(results) {
   title(ylab="Error")
   axis(side = 1, at = at)
 }
+
+plot_both <- function(results) {
+  
+  prec_measures <- list()
+  rec_measures <- list()
+  
+  for (i in 1:length(results)) {
+    #calculate f-measures for each graph in the set
+    #f_list <- list()
+    # for (k in 1:length(results[[i]])) {
+    #   #use 1 minus error for the sake of presentation
+    #   print(results[[i]][[k]])
+    #   f_list[[k]] <- 1 - find_error(results[[i]][[k]]$results$.global$.in.edges)
+    # 
+    # }
+    #print(f_list)
+    #use mean error (although should all be the same) for graph
+    #inv_measures[[i]] <- mean(unlist(f_list))
+    print(results[[i]]$results$.global$.graph)
+    both <- find_both(results[[i]]$results$.global$.graph)
+    prec_measures[[i]] <- 1 - both$.precision
+    rec_measures[[i]] <- 1 - both$.recall
+    #print(inv_measures[[i]])
+  }
+  
+  #cannot be in list form for plotting
+  precision_measures <- unlist(prec_measures)
+  print(precision_measures)
+  
+  #dev.new(width=10, height=5)
+  #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
+  #noise = 0.01
+  plot(precision_measures, main=paste("IMaGES Precision Error"), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
+  at <- seq(from=0, to=length(results), by=length(results)/20)
+  title(xlab="Number of datasets")
+  title(ylab="Error")
+  axis(side = 1, at = at)
+  
+  recall_measures <- unlist(rec_measures)
+  print(recall_measures)
+  
+  plot(recall_measures, main=paste("IMaGES Recall Error"), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
+  at <- seq(from=0, to=length(results), by=length(results)/20)
+  title(xlab="Number of datasets")
+  title(ylab="Error")
+  axis(side = 1, at = at)
+}
+
 
 #driver for individual GES-like runs
 driver <- function() {
@@ -507,7 +603,8 @@ test_driver <- function() {
     
     
   #calculates errors for each of the result sets
-  plot_error(result_sets)
+  #plot_error(result_sets)
+  plot_both(result_sets)
   
   # #plots individual sets (might creash computer as it's a lot of plots)
   # for (k in 1:length(result_sets)) {
