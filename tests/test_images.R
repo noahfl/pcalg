@@ -1,4 +1,14 @@
+library(IMaGES)
+library(graph)
+library(igraph)
+library(sfsmisc)
+library(lavaan)
+library(Rgraphviz)
+
+
 ## Load predefined data
+
+
 get_gmg <- function() {
   set.seed(50)
   p <- 8
@@ -410,6 +420,9 @@ plot_error <- function(results) {
   plot_measures <- unlist(inv_measures)
   print(plot_measures)
   
+  png(filename="f-measure.png", width=800, height=400)
+  
+  
   #dev.new(width=10, height=5)
   #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
   noise = 0.01
@@ -418,6 +431,8 @@ plot_error <- function(results) {
   title(xlab="Number of datasets")
   title(ylab="Error")
   axis(side = 1, at = at)
+  
+  dev.off()
 }
 
 plot_both <- function(results) {
@@ -448,6 +463,9 @@ plot_both <- function(results) {
   precision_measures <- unlist(prec_measures)
   print(precision_measures)
   
+  png(filename="precision.png", width=800, height=400)
+  
+  
   #dev.new(width=10, height=5)
   #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
   #noise = 0.01
@@ -457,14 +475,21 @@ plot_both <- function(results) {
   title(ylab="Error")
   axis(side = 1, at = at)
   
+  dev.off()
+  
   recall_measures <- unlist(rec_measures)
   print(recall_measures)
+  
+  png(filename="recall.png", width=800, height=400)
+  
   
   plot(recall_measures, main=paste("IMaGES Recall Error"), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
   at <- seq(from=0, to=length(results), by=length(results)/20)
   title(xlab="Number of datasets")
   title(ylab="Error")
   axis(side = 1, at = at)
+  
+  dev.off()
 }
 
 
