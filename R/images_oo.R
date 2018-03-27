@@ -242,7 +242,7 @@ IMaGES <- setRefClass("IMaGES",
                           #invisible(readline(prompt="Press [enter] to continue"))
                           #}
                           
-                          opt <- mode(opt_phases)
+                          opt <- mode(opt_phases)[[1]]
                           #print(opt_phases)
                           #print(paste("opt_phase(s): ", opt))
                           #invisible(readline(prompt="Press [enter] to continue"))
@@ -460,7 +460,7 @@ IMaGES <- setRefClass("IMaGES",
                               return(TRUE)
                             }
                             else {
-                              print("Something messed up here")
+                              #print("Something messed up here")
                               #invisible(readline(prompt="Press [enter] to continue"))
                               return(FALSE)
                               

@@ -2,14 +2,182 @@
 get_gmg <- function() {
   set.seed(40)
   p <- 8
-  n <- 5000
+  n <- 500
   ## true DAG:
   vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
   gGtrue <- randomDAG(p, prob = 0.3, V = vars)
-  gmG  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
+  #gmG  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
   gmG8 <- list(x = rmvDAG(n, gGtrue),                       g = gGtrue)
   return(gmG8)
 }
+
+randomDAG <- function (n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
+{
+  stopifnot(n >= 2, is.numeric(prob), length(prob) == 1,
+            0 <= prob, prob <= 1,
+            is.numeric(lB), is.numeric(uB), lB <= uB)
+  edL <- vector("list", n)
+  nmbEdges <- 0L
+  for (i in seq_len(n - 2)) {
+    listSize <- rbinom(1, n - i, prob)
+    nmbEdges <- nmbEdges + listSize
+    edgeList <- sample(seq(i + 1, n), size = listSize)
+    weightList <- runif(length(edgeList), min = lB, max = uB)
+    edL[[i]] <- list(edges = edgeList, weights = weightList)
+  }
+  ## i=n-1 separately
+  ## (because of sample(7,1) is actually sample(1:7,1) and not 7)
+  listSize <- rbinom(1, 1, prob)
+  if (listSize > 0) {
+    nmbEdges <- nmbEdges + 1
+    edgeList <- n
+    weightList <- runif(1, min = lB, max = uB)
+  } else {
+    edgeList <- integer(0)
+    weightList <- numeric(0)
+  }
+  edL[[n-1]] <- list(edges = edgeList, weights = weightList)
+  if (nmbEdges > 0) {
+    edL[[n]] <- list(edges = integer(0), weights = numeric(0))
+    names(edL) <- V
+    new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
+  }
+  else
+    new("graphNEL", nodes = V, edgemode = "directed")
+}
+
+rmvDAG <-
+  function(n, dag,
+           errDist = c("normal", "cauchy", "t4", "mix", "mixt3", "mixN100"),
+           mix = 0.1, errMat = NULL, back.compatible = FALSE,
+           use.node.names = !back.compatible)
+  {
+    ## Purpose: Generate data according to a given DAG (with weights) and
+    ## given node distribution (rows: number of samples; cols: node values in
+    ## topological order)
+    ## ----------------------------------------------------------------------
+    ## Arguments:
+    ## - n     : Number of samples
+    ## - dag   : Graph object containing the DAG and weights
+    ## - errDist: "normal" or "mix" for pure standard normal node distribution
+    ##           or mixing with standard cauchy
+    ## - mix   : Percentage of points sampled from standard cauchy
+    ## ----------------------------------------------------------------------
+    ## Author: Markus Kalisch, Date: 26 Jan 2006;  Martin Maechler
+    
+    ## check input &  initialize variables
+    stopifnot(is(dag, "graph"),
+              (p <- length(nodes(dag))) >= 2)
+    
+    ##  as(.,"matrix") now {for some versions of 'graph' pkg} is 0/1
+    ## weightMatrix <- t(as(dag,"matrix"))
+    weightMatrix <- if(back.compatible) wgtMatrix.0(dag) else wgtMatrix(dag)
+    
+    ## check if top. sorted
+    nonZeros <- which(weightMatrix != 0, arr.ind = TRUE)
+    if (nrow(nonZeros) > 0) {
+      if (any(nonZeros[,1] - nonZeros[,2] < 0) || any(diag(weightMatrix) != 0))
+        stop("Input DAG must be topologically ordered!")
+    }
+    
+    errDist <- match.arg(errDist)
+    if(grepl("^mix", errDist))
+      eMat <- function(outs) { # (n,p)
+        X <- c(rnorm(n*p - length(outs)), outs)
+        matrix(sample(X), nrow = n)
+      }
+    if(is.null(errMat)) {
+      ## generate errors e_i
+      errMat <-
+        switch(errDist,
+               "normal" = matrix(rnorm  (n*p),  nrow = n),
+               "cauchy" = matrix(rcauchy(n*p),  nrow = n),
+               "t4" =     matrix(rt(n*p, df = 4), nrow = n),
+               "mix"    = eMat(rcauchy(round(mix*n*p))),
+               "mixt3"  = eMat(     rt(round(mix*n*p), df = 3)),
+               "mixN100"= eMat(  rnorm(round(mix*n*p), sd = 10)))
+    }
+    else { ## check & use 'errMat' argument:
+      stopifnot(!is.null(dim.eM <- dim(errMat)),
+                dim.eM == c(n,p), is.numeric(errMat))
+    }
+    if(use.node.names)
+      colnames(errMat) <- nodes(dag) # == colnames(weightMatrix)
+    
+    ## compute X matrix X_i
+    if (sum(weightMatrix) > 0) {
+      X <- errMat
+      for (j in 2:p) { ## uses X[*, 1:(j-1)] -- "recursively" !
+        ij <- 1:(j-1)
+        X[,j] <- X[,j] + X[, ij, drop = FALSE] %*% weightMatrix[j, ij]
+      }
+      X
+    }
+    else
+      errMat
+  }
+
+wgtMatrix.0 <- function(g, transpose = TRUE)
+{
+  ## Purpose: work around "graph" package's  as(g, "matrix") bug
+  ## ----------------------------------------------------------------------
+  ## ACHTUNG: mat_[i,j]==1 iff j->i,
+  ## whereas with as(g,"matrix") mat_[i,j]==1 iff i->j
+  ## ----------------------------------------------------------------------
+  ## Arguments: g: an object inheriting from (S4) class "graph"
+  ## ----------------------------------------------------------------------
+  ## Author: Martin Maechler, based on Seth Falcon's code;  Date: 12 May 2006
+  
+  ## MM: another buglet for the case of  "no edges":
+  if(numEdges(g) == 0) {
+    p <- length(nd <- nodes(g))
+    return( matrix(0, p,p, dimnames = list(nd, nd)) )
+  }
+  ## Usual case, when there are edges:
+  if(!("weight" %in% names(edgeDataDefaults(g))))
+    edgeDataDefaults(g, "weight") <- 1L
+  w <- unlist(edgeData(g, attr = "weight"))
+  ## we need the *transposed* matrix typically:
+  tm <- if(transpose) t(as(g, "matrix")) else as(g, "matrix")
+  ## now is a 0/1 - matrix (instead of 0/wgts) with the 'graph' bug
+  if(any(w != 1)) ## fix it
+    tm[tm != 0] <- w
+  ## tm_[i,j]==1 iff i->j
+  tm
+}
+
+
+
+wgtMatrix <- function(g, transpose = TRUE) {
+  res <- as(g, "matrix") # from 'graph' package, now reliable (we hope)
+  if (transpose) ## default!
+    t(res) else res
+}
+
+#' Auxiliary function reading an edge list (as used in the constructors
+#' of DAGs) out of an adjacency matrix or a graphNEL object
+#' @param from adjacency matrix, graphNEL object, or object inherited
+#'  from ParDAG
+#' @return list of in-edges; length of list = number of vertices,
+#' entries for i-th vertex = indices sources of in-edges
+inEdgeList <- function(from)
+{
+  if (is.matrix(from)) {
+    p <- nrow(from)
+    stopifnot(p == ncol(from))
+    lapply(1:p, function(i) which(from[, i] != 0))
+  } else if (class(from) == "graphNEL") {
+    nodeNames <- graph::nodes(from)
+    edgeList <- lapply(graph::inEdges(from), function(v) match(v, nodeNames))
+    names(edgeList) <- NULL
+    edgeList
+  } else if (length(grep(".*ParDAG", class(from)) == 1)) {
+    from$.in.edges
+  }else {
+    stop(sprintf("Input of class '%s' is not supported.", class(from)))
+  }
+}
+
 
 make_data <- function(prob) {
   
@@ -28,25 +196,57 @@ make_data <- function(prob) {
 create_im_dags <- function(num_sets) {
   gmG8 <- get_gmg()
   #initial seed for generation of dataset
-  start_seed <- 3.1415926
+  start_seed <- 40
   data_list <- list()
   
   for (i in 1:num_sets) {
     set.seed(start_seed)
     p <- 8
-    n <- 5000
+    n <- 10
     ## true DAG:
     vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
     gGtrue <- gmG8$g
+    #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
     #inject noise into DAGs using rnorm
-    #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.5),5000,8), g = gGtrue)
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,0.5),5000,8), g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue) + matrix(rnorm(p*n,mean=0,sd=1),n,p), g = gGtrue)
+    #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
+    #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
     data_list[[i]] <- set8
     #increment start seed
-    start_seed = start_seed + 2000
+    #start_seed = start_seed + 20
   }
   return(data_list)
 }
+
+create_all <- function(num_sets) {
+  gmG8 <- get_gmg()
+  #initial seed for generation of dataset
+  start_seed <- 40
+  set.seed(start_seed)
+  data_list <- list()
+  
+  for (i in 1:num_sets) {
+    set.list = list()
+    for (k in 1:num_sets) {
+      p <- 8
+      n <- 500
+      ## true DAG:
+      vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+      gGtrue <- gmG8$g
+      #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
+      #inject noise into DAGs using rnorm
+      set8 <- list(x = rmvDAG(n, gGtrue) + matrix(rnorm(p*n,mean=0,sd=0.01),n,p), g = gGtrue)
+      #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
+      #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
+      set.list[[k]] <- set8
+      #increment start seed
+      #start_seed = start_seed + 20
+    }
+    data_list[[i]] <- set.list
+  }
+  return(data_list)
+}
+
 
 #create and return list of score objects to be passed into IMaGES
 create_scores <- function(datasets) {
@@ -87,6 +287,8 @@ plot_graph <- function(fit) {
 #    false negatives (edges that should have been in the generated graph but weren't)
 #and using these for the calculations
 find_error <- function(graph) {
+  
+  gmG8 <- get_gmg()
   
   true <- inEdgeList(gmG8$g)
   
@@ -160,30 +362,36 @@ plot_error <- function(results) {
   plot_measures <- unlist(inv_measures)
   print(plot_measures)
   
-  plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
-  axis(1, at=1:5)
+  #dev.new(width=10, height=5)
+  #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
+  noise = 0.01
+  plot(plot_measures, main=paste("IMaGES Error for noise value", noise), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
+  at <- seq(from=0, to=length(results), by=length(results)/20)
+  title(xlab="Number of datasets")
+  title(ylab="Error")
+  axis(side = 1, at = at)
 }
 
 #driver for individual GES-like runs
 driver <- function() {
   #change to how many graphs you want
-  num_sets <- 1
+  num_sets <- 3
   
   gmG8 <- get_gmg()
   
   #generate DAGS
-  dags <- create_im_dags(num_sets)
-  #create score objects
-  scores <- create_scores(dags)
-  #find GES-like fits using IMaGES
-  orig_fits <- run_originals(scores)
-  
-  #print(orig_fits[[1]][[1]][[2]])
-  
-  #plot in.edges for each graph
-  for (i in 1:length(orig_fits)) {
-    plotIMGraph(orig_fits[[i]]$results$.global)
-  }
+  # dags <- create_im_dags(num_sets)
+  # #create score objects
+  # scores <- create_scores(dags)
+  # #find GES-like fits using IMaGES
+  # orig_fits <- run_originals(scores)
+  # 
+  # #print(orig_fits[[1]][[1]][[2]])
+  # 
+  # #plot in.edges for each graph
+  # for (i in 1:length(orig_fits)) {
+  #   plotIMGraph(orig_fits[[i]]$results$.global)
+  # }
   
   #now do the same thing for IMaGES
   
@@ -235,10 +443,10 @@ driver_prob <- function() {
 #driver for calculation of errors across runs of increasing size
 plot_driver <- function() {
   #change to number of sets to iterate up to
-  num_sets <- 5
+  num_sets <- 10
   
   #generate gmG8 data
-  gmG8 <- get_gmg()
+  #gmG8 <- get_gmg()
 
   #stores fits for each set size
   result_sets <- list()
@@ -252,6 +460,9 @@ plot_driver <- function() {
     im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
     #append results to result_sets
     result_sets[[k]] <- im_fits
+    
+    print(k)
+    plotIMGraph(im_fits$results$.global)
     
     
   }
@@ -267,6 +478,47 @@ plot_driver <- function() {
   
   
 }
+
+test_driver <- function() {
+  #change to number of sets to iterate up to
+  num_sets <- 10
+  
+  #generate gmG8 data
+  #gmG8 <- get_gmg()
+  
+  #stores fits for each set size
+  result_sets <- list()
+  
+  #for (i in 1:num_sets) {
+    #create DAGs
+  im_run_dags <- create_all(num_sets)
+  #print(im_run_dags)
+    #create score objects
+  for (k in 1:length(im_run_dags)) {
+    im_run_scores <- create_scores(im_run_dags[[k]])
+    #run IMaGES
+    im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
+    #append results to result_sets
+    result_sets[[k]] <- im_fits
+    print(k)
+    plotIMGraph(result_sets[[k]]$results$.global)
+    
+  }
+    
+    
+  #calculates errors for each of the result sets
+  plot_error(result_sets)
+  
+  # #plots individual sets (might creash computer as it's a lot of plots)
+  # for (k in 1:length(result_sets)) {
+  #   for (i in 1:length(result_sets[[k]])) {
+  #     plot_graph(result_sets[[k]]$results[[i]][[2]])
+  #   }
+  # }
+  
+  
+}
+
 #driver for running IMaGES on autism data. works but the plot still isn't showing up properly
 #it might be due to the fact that the labels aren't included?
 autism_driver <- function() {

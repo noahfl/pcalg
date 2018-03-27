@@ -5,11 +5,12 @@ library(graph)
 get_gmg <- function() {
   set.seed(40)
   p <- 8
-  n <- 5000
+  #n <- 5000
+  n <- 100
   ## true DAG:
-  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:p))
   gGtrue <- randomDAG(p, prob = 0.3, V = vars)
-  gmG  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
+  #gmG  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
   gmG8 <- list(x = rmvDAG(n, gGtrue),                       g = gGtrue)
   return(gmG8)
 }
@@ -160,23 +161,29 @@ wgtMatrix <- function(g, transpose = TRUE) {
 
 
 create_im_dags <- function(num_sets, noise) {
-  gmG8 <- get_gmg()
-  start_seed <- 3.1415926
+  #gmG8 <- get_gmg()
+  #start_seed <- 1
   data_list <- list()
   #data_list[[1]] <- gmG8
+  set.seed(40)
+  p <- 8
+  #n <- 5000
+  n <- 100
+  ## true DAG:
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:p))
+  gGtrue <- randomDAG(p, prob = 0.3, V = vars)
   
   for (i in 1:num_sets) {
-    set.seed(start_seed)
-    p <- 8
-    n <- 5000
-    ## true DAG:
-    vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
-    gGtrue <- gmG8$g
+
+
     #s2  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
-    set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,noise),5000,8),                       g = gGtrue)
+    #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(40000,0,noise),5000,8),                       g = gGtrue)
+    #set8 <- list(x = rmvDAG(n, gGtrue)+ 
+    #               matrix(rnorm(p*n, mean=0, sd = noise), n, p), g = gGtrue)
+    set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
     print(dim(set8$x))
     data_list[[i]] <- set8
-    start_seed = start_seed + 2000
+    #start_seed = start_seed + 2000
   }
   return(data_list)
 }
@@ -237,9 +244,10 @@ find_error <- function(graph) {
   gmG8 <- get_gmg()  
   true <- inEdgeList(gmG8$g)
   print(true)
-  print(graph)
-  graph <- inEdgeList(graph)
   #print(graph)
+  print("------")
+  graph <- inEdgeList(graph)
+  print(graph)
   
   positives <- 0
   true_positives <- 0
@@ -398,11 +406,13 @@ args = commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
   stop("Please supply noise value", call.=FALSE)
-} else if (length(args) > 1) {
+} else if (length(args) > 2) {
   stop("Too many arguments!")
 }
 
 noise <- as.numeric(args[[1]])
-filename <- paste("../plot_noise_", noise, ".png", sep="")
-plot_driver(10, noise, filename)
+num_runs <- as.numeric(args[[2]])
+filename <- paste("../plot_noise_", noise, "_", num_runs, ".png", sep="")
+plot_driver(num_runs, noise, filename)
+
 
