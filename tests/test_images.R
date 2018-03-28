@@ -36,7 +36,7 @@ randomDAG <- function (n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
     edL[[i]] <- list(edges = edgeList, weights = weightList)
   }
   ## i=n-1 separately
-  ## (because of sample(7,1) is actually sample(1:7,1) and not 7)
+  ## (because of sample(7,1/) is actually sample(1:7,1) and not 7)
   listSize <- rbinom(1, 1, prob)
   if (listSize > 0) {
     nmbEdges <- nmbEdges + 1
@@ -206,19 +206,20 @@ make_data <- function(prob) {
 create_im_dags <- function(num_sets) {
   gmG8 <- get_gmg()
   #initial seed for generation of dataset
-  start_seed <- 40
+  start_seed <- 50
   data_list <- list()
+  p <- 8
+
+  n <- 2000
+    ## true DAG:
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+  gGtrue <- gmG8$g
   
   for (i in 1:num_sets) {
-    set.seed(start_seed)
-    p <- 8
-    n <- 10
-    ## true DAG:
-    vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
-    gGtrue <- gmG8$g
+   #set.seed(start_seed)
     #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
     #inject noise into DAGs using rnorm
-    set8 <- list(x = rmvDAG(n, gGtrue) + matrix(rnorm(p*n,mean=0,sd=1),n,p), g = gGtrue)
+    set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=1),n,p), g = gGtrue)
     #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
     #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
     data_list[[i]] <- set8
@@ -258,6 +259,35 @@ create_all <- function(num_sets) {
   return(data_list)
 }
 
+create_all_alt <- function(num_sets) {
+  gmG8 <- get_gmg()
+  #initial seed for generation of dataset
+  start_seed <- 50
+  set.seed(start_seed)
+  data_list <- list()
+  
+  p <- 8
+  n <- 2000
+  ## true DAG:
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+  gGtrue <- gmG8$g
+  
+  set.list <- list()
+  for (i in 1:num_sets) {
+    #set.list = list()
+    #for (k in 1:i) {
+      #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
+      #inject noise into DAGs using rnorm
+    set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=1),n,p), g = gGtrue)
+      #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
+      #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
+    set.list[[i]] <- set8
+    data_list[[i]] <- set.list
+      #increment start seed
+      #start_seed = start_seed + 20
+  }
+  return(data_list)
+}
 
 #create and return list of score objects to be passed into IMaGES
 create_scores <- function(datasets) {
@@ -425,7 +455,7 @@ plot_error <- function(results) {
   
   #dev.new(width=10, height=5)
   #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
-  noise = 0.01
+  noise = 1.8
   plot(plot_measures, main=paste("IMaGES Error for noise value", noise), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
   at <- seq(from=0, to=length(results), by=length(results)/20)
   title(xlab="Number of datasets")
@@ -522,7 +552,7 @@ driver <- function() {
   #create score objects
   im_run_scores <- create_scores(im_run_dags)
   #run IMaGES
-  im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
+  im_fits <- new("IMaGES", scores = im_run_scores, penalty=2)
   
   #plot results
   par(mfrow=c(1,2))
@@ -564,7 +594,7 @@ driver_prob <- function() {
 #driver for calculation of errors across runs of increasing size
 plot_driver <- function() {
   #change to number of sets to iterate up to
-  num_sets <- 10
+  num_sets <- 25
   
   #generate gmG8 data
   #gmG8 <- get_gmg()
@@ -583,12 +613,13 @@ plot_driver <- function() {
     result_sets[[k]] <- im_fits
     
     print(k)
-    plotIMGraph(im_fits$results$.global)
+    #plotIMGraph(im_fits$results$.global)
     
     
   }
   #calculates errors for each of the result sets
   plot_error(result_sets)
+  plot_both(result_sets)
   
   # #plots individual sets (might creash computer as it's a lot of plots)
   # for (k in 1:length(result_sets)) {
@@ -612,17 +643,17 @@ test_driver <- function() {
   
   #for (i in 1:num_sets) {
     #create DAGs
-  im_run_dags <- create_all(num_sets)
+  im_run_dags <- create_all_alt(num_sets)
   #print(im_run_dags)
     #create score objects
   for (k in 1:length(im_run_dags)) {
     im_run_scores <- create_scores(im_run_dags[[k]])
     #run IMaGES
-    im_fits <- new("IMaGES", scores = im_run_scores, penalty=3)
+    im_fits <- new("IMaGES", scores = im_run_scores, penalty=5)
     #append results to result_sets
     result_sets[[k]] <- im_fits
     print(k)
-    plotIMGraph(result_sets[[k]]$results$.global)
+    #plotIMGraph(result_sets[[k]]$results$.global)
     
   }
     
