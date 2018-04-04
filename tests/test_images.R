@@ -278,7 +278,7 @@ create_all_alt <- function(num_sets) {
     #for (k in 1:i) {
       #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
       #inject noise into DAGs using rnorm
-    set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=1),n,p), g = gGtrue)
+    set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=2),n,p), g = gGtrue)
       #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
       #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
     set.list[[i]] <- set8
@@ -649,7 +649,7 @@ test_driver <- function() {
   for (k in 1:length(im_run_dags)) {
     im_run_scores <- create_scores(im_run_dags[[k]])
     #run IMaGES
-    im_fits <- new("IMaGES", scores = im_run_scores, penalty=5)
+    im_fits <- new("IMaGES", scores = im_run_scores, penalty=20)
     #append results to result_sets
     result_sets[[k]] <- im_fits
     print(k)

@@ -1,15 +1,17 @@
 library(IMaGES)
 library(sfsmisc)
 library(graph)
+library(igraph)
 
-get_gmg <- function() {
-  set.seed(40)
-  p <- 8
+get_gmg <- function(seed, prob) {
+  set.seed(seed)
+  p <- 20
   #n <- 5000
-  n <- 100
+  n <- 5000
+  prb <- prob
   ## true DAG:
   vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:p))
-  gGtrue <- randomDAG(p, prob = 0.3, V = vars)
+  gGtrue <- randomDAG(p, prob = prb, V = vars)
   #gmG  <- list(x = rmvDAG(n, gGtrue, back.compatible=TRUE), g = gGtrue)
   gmG8 <- list(x = rmvDAG(n, gGtrue),                       g = gGtrue)
   return(gmG8)
@@ -188,6 +190,36 @@ create_im_dags <- function(num_sets, noise) {
   return(data_list)
 }
 
+create_all_alt <- function(num_sets, noise, seed, prob, range) {
+  gmG8 <- get_gmg(seed, prob)
+  #initial seed for generation of dataset
+  set.seed(seed)
+  data_list <- list()
+  
+  p <- 8
+  n <- 1000
+  ## true DAG:
+  vars <- c("Author", "Bar", "Ctrl", "Goal", paste0("V",5:8))
+  gGtrue <- gmG8$g
+  
+  set.list <- list()
+  for (i in 1:num_sets) {
+    #set.list = list()
+    #for (k in 1:i) {
+      #gGtrue <- randomDAG(p, prob = 0.3, V = vars)
+      #inject noise into DAGs using rnorm
+    #set8 <- list(x = gmG8$x + matrix(rnorm(p*n,mean=0,sd=noise),n,p), g = gGtrue)
+    set8 <- list(x = gmG8$x + matrix(runif(p*n,min=-range, max=range),n,p), g = gGtrue)
+    #set8 <- list(x = gmG8$x, g = gGtrue)
+      #set8 <- list(x = rmvDAG(n, gGtrue)+ matrix(rnorm(p*n,mean=0,sd=runif(1,0,0.5)),n,p), g = gGtrue)
+      #set8 <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
+    set.list[[i]] <- set8
+    data_list[[i]] <- set.list
+      #increment start seed
+      #start_seed = start_seed + 20
+  }
+  return(data_list)
+}
 
 create_scores <- function(datasets) {
   scores <- list()
@@ -239,13 +271,13 @@ inEdgeList <- function(from)
   }
 }
 
-find_error <- function(graph) {
+find_error <- function(graph, seed, prob) {
   
-  gmG8 <- get_gmg()  
+  gmG8 <- get_gmg(seed, prob)  
   true <- inEdgeList(gmG8$g)
   print(true)
   #print(graph)
-  print("------")
+  #print("------")
   graph <- inEdgeList(graph)
   print(graph)
   
@@ -257,51 +289,42 @@ find_error <- function(graph) {
   #true_list <- list()
   
   for (i in 1:length(graph)) {
-    #print(length(graph))
-    #if (length(graph$.in.edges[[i]]) > 0) {
     for (j in 1:length(graph[[i]])) {
-      #print(paste("graph[[i]]: ", graph[[i]], "\n"))
-      # if !(true$.in.edges[[i]][[j]] %in% graph$.in.edges[[i]]) {
-      #   
-      # }
-      #print(paste("length of graph edgelist: ", length(graph$.in.edges[[i]])))
-      #print(paste("length of true edgelist: ", length(true[[i]])))
-      #print("HERE")
-      
-      #print(paste("len graph[[i]]: ", length(graph[[i]]), "len true[[i]]: ", length(true[[i]])))
       if (((length(graph[[i]]) > 0) && (length(true[[i]]) > 0)) && (graph[[i]][[j]] %in% true[[i]])) {
-        #if (!(is.null(graph[[i]])) && !(is.null(true[[i]])) && (graph[[i]][[j]] %in% true[[i]])) {
-        #if ((length(true[[i]]) > 0) && (graph$.in.edges[[i]][[j]] %in% true[[i]])) {
-        #print("positive")
         positives <- positives + 1
         
       }
       
       else if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && !(graph[[i]][[j]] %in% true[[i]])) {
-        #else if ((length(true[[i]]) > 0) && !(graph$.in.edges[[i]][[j]] %in% true[[i]])) {
-        #print("false")
         false_positives <- false_positives + 1
       }
     }
-    #}
     #print("here")
     if (length(true[[i]]) > 0) {
-      #print("HERE")
+      print("HERE")
       for (k in 1:length(true[[i]])) {
-        if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && (true[[i]][[k]] %in% graph[[i]])) {
+        
+        #if ((length(graph[[i]]) > 0) && (true[[i]][[k]] %in% graph[[i]])) {
+        if ((length(graph[[i]]) > 0)&&(true[[i]][[k]] %in% graph[[i]])) {
           #print("true pos")
           true_positives <- true_positives + 1
         }
-        else if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && !(true[[i]][[k]] %in% graph[[i]])) {
+        else if ((length(graph[[i]]) > 0) && !(true[[i]][[k]] %in% graph[[i]])) {
           #print("false neg")
           false_negatives <- false_negatives + 1
+        }
+        else if ((length(graph[[i]]) == 0)) {
+          #print("false neg")
+          false_negatives <- false_negatives + length(true[[i]])
         }
       }
     }
   }
   
   #print(paste("Positives: ", positives, "True positives: ", true_positives, "False positives: ", false_positives, "False negatives: ", false_negatives))
-  
+  print(paste("TRUE POSITIVES: " , true_positives, "vs. ", positives))
+  #print(paste("TRUE NEGATIVES: ", true_negatives))
+  print(paste("FALSE NEGATIVES: ", false_negatives))
   precision <- true_positives / (true_positives + false_positives)
   recall <- true_positives / (true_positives + false_negatives)
   
@@ -309,6 +332,76 @@ find_error <- function(graph) {
   return(f_measure)
 }
 
+find_error_alt <- function(graph, seed, prob) {
+  gmG8 <- get_gmg(seed, prob)
+  target <- as_adjacency_matrix(igraph.from.graphNEL(graph), names=FALSE)
+  true <- as_adjacency_matrix(igraph.from.graphNEL(gmG8$g), names=FALSE)
+  
+  retrieved <- sum(target)
+  precision <- sum(target & true) / retrieved
+  recall <- sum(target & true) / sum(true)
+  f_measure <- 2 * (precision * recall) / (precision + recall)
+  return(f_measure)
+
+}
+
+
+find_both <- function(graph, seed, prob) {
+  
+  gmG8 <- get_gmg(seed, prob)
+  
+  true <- inEdgeList(gmG8$g)
+  
+  graph <- inEdgeList(graph)
+  
+  positives <- 0
+  true_positives <- 0
+  false_positives <- 0
+  false_negatives <- 0
+  #print(graph)
+  for (i in 1:length(graph)) {
+    for (j in 1:length(graph[[i]])) {
+      if (((length(graph[[i]]) > 0) && (length(true[[i]]) > 0)) && (graph[[i]][[j]] %in% true[[i]])) {
+        positives <- positives + 1
+        
+      }
+      
+      else if ((length(graph[[i]]) > 0) && (length(true[[i]]) > 0) && !(graph[[i]][[j]] %in% true[[i]])) {
+        false_positives <- false_positives + 1
+      }
+    }
+    #print("here")
+    if (length(true[[i]]) > 0) {
+      print("HERE")
+      for (k in 1:length(true[[i]])) {
+        
+        #if ((length(graph[[i]]) > 0) && (true[[i]][[k]] %in% graph[[i]])) {
+        if ((length(graph[[i]]) > 0)&&(true[[i]][[k]] %in% graph[[i]])) {
+          #print("true pos")
+          true_positives <- true_positives + 1
+        }
+        else if ((length(graph[[i]]) > 0) && !(true[[i]][[k]] %in% graph[[i]])) {
+          #print("false neg")
+          false_negatives <- false_negatives + 1
+        }
+        else if ((length(graph[[i]]) == 0)) {
+          #print("false neg")
+          false_negatives <- false_negatives + length(true[[i]])
+        }
+      }
+    }
+  }
+  
+  precision <- true_positives / (true_positives + false_positives)
+  recall <- true_positives / (true_positives + false_negatives)
+  
+  #print("made it here")
+  
+  res <- list(.precision=precision, .recall=recall)
+  
+  #f_measure <- 2 * ((precision * recall) / (precision + recall))
+  return(res)
+}
 
 #plot_error <- function(results, fname, num_sets) {
 #  inv_measures <- list()
@@ -336,31 +429,33 @@ find_error <- function(graph) {
 #  axis(1, at=1:num_sets)
 #  dev.off()
 #}
-plot_error <- function(results, fname, num_sets, noise) {
+plot_error <- function(results, fname, num_sets, noise, penalty, seed, prob) {
   inv_measures <- list()
   
   #print(paste("length: ", length(results)))
   for (i in 1:length(results)) {
     f_list <- list()
     #print(paste("results: ", length(results[[i]])))
-    for (k in 1:length(results[[i]]$results)) {
+    #for (k in 1:length(results[[i]]$results)) {
       
       #f_list[[k]] <- find_error(results[[i]]$results[[k]][[2]]$.in.edges)
-      f_list[[k]] <- 1 - find_error(results[[i]]$results$.global$.graph)
+    #f_list[[k]] <- 1 - find_error(results[[i]]$results$.global$.graph, seed)
       
-    }
+    #}
     #print(f_list)
-    inv_measures[[i]] <- mean(unlist(f_list))
+    #inv_measures[[i]] <- mean(unlist(f_list))
+    inv_measures[[i]] <- 1 - find_error_alt(results[[i]]$results$.global$.graph, seed, prob)
+ 
   }
   
   print(inv_measures)
   
-  png(filename=fname, width=800, height=400)
+  png(filename=paste(fname,".png", sep=""), width=800, height=400)
   plot_measures <- unlist(inv_measures)
   
   #dev.new(width=10, height=5)
   #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
-  plot(plot_measures, main=paste("IMaGES Error for noise value", noise), type="o", col='blue', ylim=c(0,0.5), xlab='', ylab='')
+  plot(plot_measures, main=paste("IMaGES Error - noise=", noise, ", penalty=", penalty, sep=""), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
   at <- seq(from=0, to=num_sets, by=num_sets/20)
   title(xlab="Number of datasets")
   title(ylab="Error")
@@ -369,28 +464,86 @@ plot_error <- function(results, fname, num_sets, noise) {
   dev.off()
 }
 
-
-plot_driver <- function(num_sets, noise, fname) {
+plot_both <- function(results, fname, num_sets, noise, penalty, prob) {
   
-  #gmG8 <- get_gmg()
+  prec_measures <- list()
+  rec_measures <- list()
+  
+  for (i in 1:length(results)) {
+    #calculate f-measures for each graph in the set
+    #f_list <- list()
+    # for (k in 1:length(results[[i]])) {
+    #   #use 1 minus error for the sake of presentation
+    #   print(results[[i]][[k]])
+    #   f_list[[k]] <- 1 - find_error(results[[i]][[k]]$results$.global$.in.edges)
+    # 
+    # }
+    #print(f_list)
+    #use mean error (although should all be the same) for graph
+    #inv_measures[[i]] <- mean(unlist(f_list))
+    #print(results[[i]]$results$.global$.graph)
+    both <- find_both(results[[i]]$results$.global$.graph, seed, prob)
+    prec_measures[[i]] <- 1 - both$.precision
+    rec_measures[[i]] <- 1 - both$.recall
+    #print(inv_measures[[i]])
+  }
+  
+  #cannot be in list form for plotting
+  precision_measures <- unlist(prec_measures)
+  print(precision_measures)
+  
+  png(filename=paste(fname,"_precision.png", sep=""), width=800, height=400)
+  
+  
+  #dev.new(width=10, height=5)
+  #plot(plot_measures, type="o", col="blue", main="Error", ylim=c(0,0.5))
+  #noise = 0.01
+  plot(precision_measures, main=paste("IMaGES Prec. Error - noise=", noise, ", penalty=", penalty, sep=""), type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
+  at <- seq(from=0, to=length(results), by=length(results)/20)
+  title(xlab="Number of datasets")
+  title(ylab="Error")
+  axis(side = 1, at = at)
+  
+  dev.off()
+  
+  recall_measures <- unlist(rec_measures)
+  print(recall_measures)
+  
+  png(filename=paste(fname, "_recall.png", sep=""), width=800, height=400)
+  
+  
+  plot(recall_measures,main=paste("IMaGES Recall Error - noise=", noise, ", penalty=", penalty, sep="") , type="o", col='blue', ylim=c(0,1), xlab='', ylab='')
+  at <- seq(from=0, to=length(results), by=length(results)/20)
+  title(xlab="Number of datasets")
+  title(ylab="Error")
+  axis(side = 1, at = at)
+  
+  dev.off()
+}
+
+
+plot_driver <- function(num_sets, noise, fname, penalty, seed, prob, range) {
+  gmG8 <- get_gmg(seed, prob)
+  print(gmG8$g)
   
   result_sets <- list()
+  im_run_dags <- create_all_alt(num_sets, noise, seed, prob, range)
   
   for (k in 1:num_sets) {
+    print(k)
     
-    im_run_dags <- create_im_dags(k, noise)
     
-    im_run_scores <- create_scores(im_run_dags)
+    im_run_scores <- create_scores(im_run_dags[[k]])
     #print(scores == im_run_scores)
-    im_fits <- run_im(im_run_scores)
+    im_fits <- new("IMaGES", scores=im_run_scores, penalty=penalty)
     result_sets[[k]] <- im_fits
     
     
   }
   
-  saveRDS(result_sets, paste(noise, "_", num_sets, "results.rds", sep=""))
+  #saveRDS(result_sets, paste(noise, "_", num_sets, "results.rds", sep=""))
   
-  plot_error(result_sets, fname, num_sets, noise)
+  plot_error(result_sets, fname, num_sets, noise, penalty, seed, prob)
   
   print(length(result_sets))
   
@@ -405,14 +558,20 @@ plot_driver <- function(num_sets, noise, fname) {
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args) == 0) {
-  stop("Please supply noise value", call.=FALSE)
-} else if (length(args) > 2) {
+  stop("Please supply arguments; noise, num_runs, penalty", call.=FALSE)
+} else if (length(args) > 6) {
   stop("Too many arguments!")
 }
 
 noise <- as.numeric(args[[1]])
 num_runs <- as.numeric(args[[2]])
-filename <- paste("../plot_noise_", noise, "_", num_runs, ".png", sep="")
-plot_driver(num_runs, noise, filename)
+penalty <- as.numeric(args[[3]])
+seed <- as.numeric(args[[4]])
+prob <- as.numeric(args[[5]])
+range <- as.numeric(args[[6]])
+
+print(paste("Seed: ", seed))
+filename <- paste("../plot_noise_", noise, "_", num_runs, "_pen=", penalty, "_seed=", seed, "_prob=", prob, "_range=", range, sep="")
+plot_driver(num_runs, noise, filename, penalty, seed, prob, range)
 
 
