@@ -4,6 +4,8 @@
 
 ## $Id: AllClasses.R 450 2017-07-11 09:29:16Z mkalisch $
 
+`%nin%` = Negate(`%in%`)
+
 setClass("gAlgo",
          slots = c(call = "call",
                         n = "integer",

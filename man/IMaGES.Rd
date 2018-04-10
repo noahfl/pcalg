@@ -22,12 +22,14 @@ new("IMaGES", matrices = list(matrix1, matrix2....), penalty=3, num.markovs=5)
 \details{
 
   IMaGES (Independent Multi-sample Greedy Equivalence Search) is a score-based 
-  algorithm that greedily
-  maximizes a score function (typically the BIC, passed to the function via the
-  argument \code{score}) in the space of (observational) essential graphs in
-  three phases, starting from the empty graph:
+  algorithm that greedily maximizes a score function similar to the one used
+  in the pcalg implementation of GES. It modifies the scoring by creating a
+  global score across all datasets and uses this score to determine which 
+  step from the individual datasets best represents all of the datasets. It 
+  accomplishes this by using forward, backward, and turning steps as described
+  below:
   \describe{
-    \item{Forward phase}{In the forward phase, GES moves through the space of
+    \item{Forward phase}{In the forward phase, IMaGES moves through the space of
     essential graphs in steps that correspond to the addition of a single edge
     in the space of DAGs; the phase is aborted as soon as the score cannot be
     augmented any more.}
@@ -37,10 +39,14 @@ new("IMaGES", matrices = list(matrix1, matrix2....), penalty=3, num.markovs=5)
     \item{Turning phase}{In the turning phase, the algorithm performs moves
     that correspond to the reversal of a single arrow in the space of DAGs
     until the score cannot be augmented any more.}
+    
+    
   }
+    These operations are carried out and result in a global representative graph
+    and a Markov Equivalence Class.
+    
+    TODO: finish
 
-  % TODO: Adjust this last paragraph and write a note about the difference 
-  % between ARGES and ARGES-skeleton.
 }
 \value{
   \code{IMaGES} returns a list with the following two components:

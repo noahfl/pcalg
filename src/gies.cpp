@@ -228,7 +228,7 @@ RcppExport SEXP greedyStepRFunc(
     SEXP argOptions
 )
 {
-  std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
+  //std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
   
   BEGIN_RCPP
   
