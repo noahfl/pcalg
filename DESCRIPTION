@@ -26,8 +26,7 @@ Author: Noah Frazier-Logue [aut, cre], Stephen Jose Hanson [aut, cre],
 Depends: R (>= 3.0.2)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo, BH
 Imports: stats, graphics, utils, methods, abind, graph, RBGL, igraph,
-        ggm, corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc (>=
-        1.0-26), fastICA, clue, gmp, dagitty, Rgraphviz
+        ggm, corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc, fastICA, clue, gmp, dagitty, Rgraphviz
 Suggests: MASS, Matrix, Rgraphviz, mvtnorm
 ByteCompile: yes
 NeedsCompilation: yes
@@ -36,4 +35,4 @@ License: GPL (>= 2)
 URL: http://github.com/noahfl/images
 Packaged: 2018-03-14 15:04:57 UTC; noahfl
 Repository: CRAN
-#Date/Publication: 2017-07-12 10:41:16 UTC
+RoxygenNote: 6.0.1

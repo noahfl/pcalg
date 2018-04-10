@@ -228,7 +228,7 @@ RcppExport SEXP greedyStepRFunc(
     SEXP argOptions
 )
 {
-  //std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
+  std::cout << "Made it to greedyStepRFunc pre Rcpp\n";
   
   BEGIN_RCPP
   
@@ -558,79 +558,6 @@ RcppExport SEXP causalInferenceEdge(
       stepNames.push_back("turning1");
     }
   }
-  //std::cout << "Edge change: " << edgeChange.get<0>() << ", " << edgeChange.get<1>() << ", " << edgeChange.get<2>() << "\n";
-  // // Single one or several steps of GIES into either direction
-  // else if (algName == "GIES-STEP") {
-  //   dout.level(1) << "Performing " << algName << "...\n";
-  //   
-  //   // Limit to single step if requested
-  //   stepLimit = Rcpp::as<int>(options["maxSteps"]);
-  //   if (stepLimit == 0)
-  //     stepLimit = graph.getVertexCount()*graph.getVertexCount();
-  //   
-  //   // Steps: 3 entries, storing number of forward, backward, and turning steps
-  //   step_dir dir(SD_NONE), lastDir(SD_NONE);
-  //   std::vector<int> stepCount(4);
-  //   do {
-  //     dir = graph.greedyStep();
-  //     if (dir != SD_NONE) {
-  //       if (dir != lastDir) {
-  //         steps.push_back(1);
-  //         stepCount[0]++;
-  //         ss.str(std::string());
-  //         switch(dir) {
-  //         case SD_FORWARD:
-  //           ss << "forward";
-  //           break;
-  //           
-  //         case SD_BACKWARD:
-  //           ss << "backward";
-  //           break;
-  //           
-  //         case SD_TURNING:
-  //           ss << "turning";
-  //           break;
-  //         }
-  //         ss << stepCount[dir]++;
-  //         stepNames.push_back(ss.str());
-  //       } // IF dir
-  //       else {
-  //         steps.back()++;
-  //       }
-  //     } // IF dir
-  //   } while (stepCount[0] < stepLimit && dir != SD_NONE);
-  // }
-  // 
-  // // GDS; yields a DAG, not an equivalence class!
-  // else if (algName == "GDS") {
-  //   // Perform a greedy search with the requested phases, either iteratively or only once
-  //   bool cont;
-  //   int phaseCount(1);
-  //   do {
-  //     cont = false;
-  //     for (int i = 0; i < phases.size(); ++i) {
-  //       for (steps.push_back(0);
-  //            graph.greedyDAGStepDir(phases[i]);
-  //            steps.back()++) {
-  //         cont = true;
-  //       }
-  //       ss.str(std::string());
-  //       ss << optPhases[i] << phaseCount;
-  //       stepNames.push_back(ss.str());
-  //     }
-  //     cont &= doIterate;
-  //     phaseCount++;
-  //   } while (cont);
-  // }
-  // 
-  // // DP; yields a DAG, not an equivalence class!
-  // else if (algName == "SiMy") {
-  //   graph.siMySearch();
-  //   // graph.replaceUnprotected();
-  // }
-  
-  // Other algorithm: throw an error
-  //else throw std::runtime_error(algName + ": invalid algorithm name");
   
   // Return new list of in-edges and steps
   delete score;
@@ -638,13 +565,11 @@ RcppExport SEXP causalInferenceEdge(
   namedSteps.names() = stepNames;
   
   Rcpp::List edgeEdit = Rcpp::List::create(
+    //add 1 to account for difference in R indexing
     Rcpp::Named("src") = edgeChange.get<0>() + 1,
     Rcpp::Named("dst") = edgeChange.get<1>() + 1,
     Rcpp::Named("alg") = edgeChange.get<2>()
   );
-  
-  // TODO "interrupt" zurückgeben, falls Ausführung unterbrochen wurde. Problem:
-  // check_interrupt() scheint nur einmal true zurückzugeben...
   
   //TODO: convert to Rcpp::IntegerVector for edges and return step as Named string
   return Rcpp::List::create(

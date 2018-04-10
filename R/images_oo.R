@@ -1,12 +1,33 @@
 IMaGES <- setRefClass("IMaGES",
-                      fields = list(matrices="list", penalty="numeric", .rawscores="list", .graphs="list", imscore = "numeric", results="list", scores = "list", num.markovs = "numeric"),
-                      
-                      # validity <- function(object) {
-                      #   return(TRUE)
-                      # },
-                      
-                      
+                      fields = list(
+                        matrices="list",
+                        penalty="numeric",
+                        .rawscores="list",
+                        .graphs="list",
+                        imscore = "numeric",
+                        results="list",
+                        scores = "list",
+                        num.markovs = "numeric"),
+                   
                       methods = list(
+                        
+                        ## Purpose: cast input data into graph object for use with IMaGES algorithm
+                        ## ----------------------------------------------------------------------
+                        ##' @param score 	scoring object to be used
+                        ##' @param labels 	node labels
+                        ##' @param fixedGaps 	logical matrix indicating forbidden edges
+                        ##' @param adaptive sets the behaviour for adaptiveness in the forward phase (cf. "ARGES")
+                        ##' @param phase  lists the phases that should be executed
+                        ##' @param iterate  indicates whether the phases should be iterated. iterated = FALSE
+                        ##'   means that the required phases are run just once
+                        ##' @param turning	indicates whether the turning step should be included (DEPRECATED).
+                        ##' @param maxDegree 	maximum vertex degree allowed
+                        ##' @param verbose 	indicates whether debug output should be printed
+                        ##' @param ... 		additional parameters (currently none)
+                        ##' @param targets 	unique list of targets. Normally determined from the scoring object
+                        ## ----------------------------------------------------------------------
+                        ## return: IMGraph object
+                        ## Author: Markus Kalisch, Date: 26 Jan 2006;  Martin Maechler; Modified by Noah Frazier-Logue
                         create.graph = function(
                           score, 
                           labels = score$getNodes(), 
@@ -127,46 +148,28 @@ IMaGES <- setRefClass("IMaGES",
                           # } else stop("invalid 'algorithm' or \"EssGraph\" object")
                         },
                         
+                        
+                        ## Purpose: run a particular GES phase (forward, backward, turning) on a 
+                        ##          given graph
+                        ## ----------------------------------------------------------------------
+                        ##' @param phase GES phase to run on a given graph
+                        ##' @param j index of graph to run supplied GES phase on
+                        ## ----------------------------------------------------------------------
+                        ##
+                        ## Author: Noah Frazier-Logue
                         run_phase = function(phase="GIES-F", j) {
-                          
-                          alg.name <- phase
-                          
-                          # alg.name <- ""
-                          # 
-                          # #phase <- match.arg(phase)
-                          # 
-                          # if (phase == "forward") {
-                          #   alg.name <- "GIES-F"
-                          # }
-                          # else if (phase == "backward") {
-                          #   alg.name <- "GIES-B"
-                          # }
-                          # else if (phase == "turning") {
-                          #   alg.name <- "GIES-T"
-                          # }
-                          # else {
-                          #   print(paste("alg name: ", alg.name))
-                          #   stop("incorrect algorithm name")
-                          # }
-                          
-                          #print("ALGORITHM")
-                          #print(alg.name)
-                          
-                          #for (i in 1:length(.graphs)) {
-                          if (!.graphs[[j]]$greedy.step(alg.name=alg.name, direction = phase, verbose = FALSE)) {
-                            #stop("something happened")
-                            #print("SOMETHING HAPPENED. probably that number thing")
-                            #print(.graphs[[j]]$.nodes)
-                          }
-                          else {
-                            #print("good")
-                            #print(.graphs[[j]]$.nodes)
-                          }
-                          #}
-                          
+                          .graphs[[j]]$greedy.step(alg.name=phase, direction = phase, verbose = FALSE)
                         },
                         
-                        #only finds first max. look into this
+                        ## Purpose: find optimal IMaGES phase to run by calculating the mode of
+                        ##          the phases list found
+                        ## NOTE: this function is no longer used
+                        ## ----------------------------------------------------------------------
+                        ##' @param opt_phases list of optimal phases selected for each individual
+                        ##'                   graph
+                        ## ----------------------------------------------------------------------
+                        ##' @return: value of mode
+                        ## Author: Noah Frazier-Logue
                         find_opt = function(opt_phases) {
                           phases <- list()
                           phase_counts = list()
@@ -188,50 +191,43 @@ IMaGES <- setRefClass("IMaGES",
                           return(phases[[index]])
                         },
                         
+                        ## Purpose: update global IMScore
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         update_score = function() {
                           
-                          #print(paste("IM before: ", trueIM$score))
-                          
                           imscore <- IMScore()
-                          #imscore <<- IMScore()
-                          #trueIM <<- imscore
-                          assign("score", imscore, envir=trueIM)
-                          #unlockBinding("trueIM", environment())
-                          
-                          
-                          #print("UPDATED")
-                          #print(get("score", envir=trueIM))
-                          
-                          # for (i in 1:length(.graphs)) {
-                          #   #print("INITIAL")
-                          #   #print(.graphs[[i]]$.score$.imscore)
-                          #   .graphs[[i]]$.score$.imscore <<- imscore
-                          #   
-                          #   #print("AFTER")
-                          #   #print(.graphs[[i]]$.score$.imscore)
-                          #   .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=imscore)
-                          # }
+                          #assign("score", imscore, envir=trueIM)
+                          trueIM$score <- imscore
                         },
                         
+                        ## Purpose: run a particular GES phase (forward, backward, turning) on a 
+                        ##          given graph
+                        ## ----------------------------------------------------------------------
+                        ##' @param x
+                        ## ----------------------------------------------------------------------
+                        ##' @return: index of mode
+                        ## Author: Noah Frazier-Logue
                         mode = function(x) {
                           ux <- unique(x)
                           #ux[which.max(tabulate(match(x, ux)))]
                           tab <- tabulate(match(x, ux)); ux[tab == max(tab)]
                         },
                         
+                        ## Purpose: runs one phase of IMaGES on all the graphs. Works by 
+                        ##          determining the optimal step (forward, backward, turning) for
+                        ##          each graph and picking the step that most increases the IMscore
+                        ##          across all graphs
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         run = function() {
-                          #print("start of run")
+                          
                           update_score()
-                          #print("score updated")
-                          phases = list("forward", "backward", "turning")
                           
                           opt_phases = list()
                           
-                          #for (i in 1:length(phases)) {
+                          #call C++ function that determines best step for each graph
                           for (j in 1:length(.graphs)) {
-                            #print(toString(j))
-                            #print("MADE IT HERE")
-                            #opt_phases[[i]] = .Call("greedyStepRFunc", .graphs[[i]$.in.edges, PACKAGE = "imagestest")
                             opt_phases[[j]] <- .Call("greedyStepRFunc",
                                                      .graphs[[j]]$.in.edges,
                                                      .graphs[[j]]$.score$pp.dat,
@@ -239,31 +235,14 @@ IMaGES <- setRefClass("IMaGES",
                                                      .graphs[[j]]$causal.inf.options(caching = FALSE, maxSteps = 1),
                                                      PACKAGE = "IMaGES")
                           }
-                          #invisible(readline(prompt="Press [enter] to continue"))
-                          #}
-                          
+
+                          #find mode of optimal phase list
                           opt <- mode(opt_phases)[[1]]
-                          #print(opt_phases)
-                          #print(paste("opt_phase(s): ", opt))
-                          #invisible(readline(prompt="Press [enter] to continue"))
                           
                           str_opt <- ''
                           
-                          for (i in 1:length(opt_phases)) {
-                            if (opt_phases[[i]] == 1) {
-                              opt_phases[[i]] <- 'GIES-F'
-                            }
-                            else if (opt_phases[[i]] == 2) {
-                              opt_phases[[i]] <- 'GIES-B'
-                            }
-                            else if (opt_phases[[i]] == 3) {
-                              opt_phases[[i]] <- 'GIES-T'
-                            }
-                            else if (opt_phases[[i]] == 0) {
-                              opt_phases[[i]] <- 'none'
-                            }
-                          }
-                          
+                          #map numeric value to text value for use in
+                          #run_phase
                           if (opt == 1) {
                             str_opt <- 'GIES-F'
                           }
@@ -272,74 +251,39 @@ IMaGES <- setRefClass("IMaGES",
                           }
                           else if (opt == 3) {
                             str_opt <- 'GIES-T'
-                            #print("Detected TURN")
-                            #print("Something messed up here")
-                            #invisible(readline(prompt="Press [enter] to continue"))
                           }
                           else if (opt == 0) {
                             str_opt <- 'none'
-                            #print("Detected NONE")
-                            #print("Something messed up here")
-                            #invisible(readline(prompt="Press [enter] to continue"))
                           }
                           
                           temp.scores <- vector()
                           if (!(str_opt == "none")) {
                             for (j in 1:length(.graphs)) {
-                              #print(paste("opt_phase: ", str_opt))
-                              #print(toString(j))
-                              
-                              
-                              #run_phase(phase=str_opt, j)
+                              #run single phase on graph j
                               run_phase(phase=str_opt, j)
-                              
-                              
-                              #TODO: run, get score, roll back for each
-                              #then implement one with best score update for global graph
+                              #save score value generated by individual graph change
                               temp.scores[[j]] <- IMScore()
+                              #undo step so next iteration has clean comparison
                               .graphs[[j]]$undo.step()
                             }
                             
                             #re-enable all steps after seeing which best impacts IMScore
                             for (j in 1:length(.graphs)) {
                               .graphs[[j]]$redo.step()
-                              #print(paste("graph ", j))
-                              update.markovs(.graphs[[j]], temp.scores[[j]])
+                              #see if graph j is in MEC
+                              if (length(.graphs[[j]]$.in.edges) > 0) {
+                                update.markovs(.graphs[[j]], temp.scores[[j]])
+                              }
                             }
-                            
-                            find.best.step(temp.scores)
-                            
-                            
+                            #find.best.step(temp.scores)
                           }
-
-                          
-                          
-                          #best.graph.index <- which(temp.scores == max(temp.scores))
-                          #, best.graph.index)
-                          # print(paste("Best index: ", best.graph.index))
-                          # print(best.graph.index)
-                          # 
-                          # #re-enable all steps after seeing which best impacts IMScore
-                          # for (j in 1:length(.graphs)) {
-                          #   .graphs[[j]]$redo.step()
-                          # }
-                          # #update IMScore with all changes
-                          # update_score()
-                          # 
-                          # #just use first index of best.graph.index for now
-                          # #TODO: find smarter way to do this
-                          # if (!update.global(.graphs[[best.graph.index[[1]]]]$.edge.change)) {
-                          #   
-                          # }
-                              
-                              #return(TRUE)
-                          # else {
-                          #   return(FALSE)
-                          # }
-
-  
                         },
                         
+                        
+                        ## Purpose: finds ideal step/edge to insert into global structure
+                        ## Note: this funciton is no longer used
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         find.best.step = function(score.list) {
                           # for (i in 1:length(score.list)) {
                           #   .graphs[[i]]$undo.step()
@@ -353,12 +297,13 @@ IMaGES <- setRefClass("IMaGES",
                           if (inf == length(score.list)) {
                             return()
                           }
-                          #print(paste("SCORES: ", score.list))
+                          
+                          #find index of the graph that had greatest positive effect
+                          #on IMScore
+                          #Note: can return two values if two edge changes have an identical
+                          #      impact on the IMScore
                           best.graph.index <- which(score.list == max(score.list))
-                          
-                          #print(paste("Best index: ", best.graph.index))
-                          #print(best.graph.index)
-                          
+
 
                           #update IMScore with all changes
                           update_score()
@@ -374,18 +319,28 @@ IMaGES <- setRefClass("IMaGES",
                           
                         },
                         
-                        #insert edge into global graph, where dst contains the list of edges going towards it
+                        
+                        ## Purpose: insert edge into global graph, 
+                        ##          where dst contains the list of edges going towards it
+                        ## ----------------------------------------------------------------------
+                        ##' @param src source vertex, represented as an int
+                        ##' @param dst destination vertex, represented as an int
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         insert.global = function(src, dst) {
                           insert <- src
-                          #print(paste("dst: ", dst))
-                          #print(trueIM$global.edges)
-                          #find index where edge should be inserted
                           insert.point <- which(order(c(insert, trueIM$global.edges[[dst]]))==1)
                           #insert the edge into the edgelist for that vertex
                           trueIM$global.edges[[dst]] <- append(trueIM$global.edges[[dst]], insert, insert.point - 1)
                         },
                         
-                        #remove edge from global graph, where *dst* contains the list of edges going towards it
+                        ## Purpose: remove edge from global graph, where *dst* contains the list of edges going towards it
+                        ##          where dst contains the list of edges going towards it
+                        ## ----------------------------------------------------------------------
+                        ##' @param src source vertex, represented as an int
+                        ##' @param dst destination vertex, represented as an int
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         remove.global = function(src, dst) {
                           #remove edge by reassigning edge list to itself, where none of the values are *src*
                           #print(paste("src: ", src))
@@ -395,35 +350,58 @@ IMaGES <- setRefClass("IMaGES",
                           trueIM$global.edges[[dst]] <- trueIM$global.edges[[dst]][trueIM$global.edges[[dst]] != src]
                         },
                         
-                        #perform swap on *src* and *dst* to imitate turning method
+                        ## Purpose: perform deletion of (src,dst) edge and insertion of (dst,src)
+                        ##          edge to simulate "turning" mode for global graph
+                        ## ----------------------------------------------------------------------
+                        ##' @param src source vertex, represented as an int
+                        ##' @param dst destination vertex, represented as an int
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         turn.global = function(src, dst) {
-                          #print(trueIM$global.edges)
                           remove.global(src, dst)
-                          #print(trueIM$global.edges)
                           insert.global(dst,src)
-                          #print(trueIM$global.edges)
-                          #invisible(readline(prompt="Press [enter] to continue"))
-                          
                         },
                         
+                        ## Purpose: determine whether or not an edge exists in the global graph
+                        ##          given the src and dst vertices
+                        ## ----------------------------------------------------------------------
+                        ##' @param src source vertex, represented as an int
+                        ##' @param dst destination vertex, represented as an int
+                        ##' @return TRUE if edge exists in global and FALSE otherwise
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         edge.exists = function(src, dst) {
                           return(src %in% trueIM$global.edges[[dst]])
-
                         },
                         
+                        ## Purpose: determine whether or not an edge is legal to insert
+                        ##          given the src and dst vertices
+                        ## ----------------------------------------------------------------------
+                        ##' @param src source vertex, represented as an int
+                        ##' @param dst destination vertex, represented as an int
+                        ##' @return TRUE if edge is able to be inserted and FALSE otherwise
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         is.legal.edge = function(src, dst) {
-                          #print(paste("SRC: ", src, " DST: ", dst))
                           if (src > 0 && src <= ncol(.graphs[[1]]$.score$pp.dat$data)) {
                             if (dst > 0 && dst <= ncol(.graphs[[1]]$.score$pp.dat$data)) {
                               return(TRUE)
                             }
                           }
-                          #print("not true")
                           return(FALSE)
                         },
                         
-                        #handles updating of global graph. calls insert.global, remove.global,
-                        #or turn.global depending on what the edge change specifies
+                        
+                        ## Purpose: handles updating of global graph. calls insert.global, remove.global,
+                        ##          or turn.global depending on what the edge change specifies
+                        ##
+                        ## Note: this function is no longer used
+                        ## ----------------------------------------------------------------------
+                        ##' @param edge.change list containing src vertex, dst vertex, and step
+                        ##'                    to run on that edge
+                        ##' @return TRUE if global structure is able to be updated and FALSE otherwise
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         update.global = function(edge.change) {
                           src <- edge.change[[1]]
                           dst <- edge.change[[2]]
@@ -471,6 +449,11 @@ IMaGES <- setRefClass("IMaGES",
                           }
                         },
                         
+                        ## Purpose: initializes global graph prior to IMaGES run
+                        ##
+                        ## Note: this function is no longer used
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         initialize.global = function() {
                           edges <- list()
                           
@@ -478,159 +461,41 @@ IMaGES <- setRefClass("IMaGES",
                             edges[[i]] <- vector()
                           }
                           
-                          assign("global.edges", edges, env=trueIM)
+                          #assign("global.edges", edges, env=trueIM)
+                          trueIM$global.edges <- edges
                         },
                         
+                        
+                        ## Purpose: calculates IMScore, the global replacement for the local score.
+                        ##          Equation from Six Problems paper used.
+                        ##
+                        ## ----------------------------------------------------------------------
+                        ##' @return IMScore
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         IMScore = function() {
-                          
-                          #graphs <- .graphs
-                          #penalty <- get('penalty', envir=globalenv())
                           penalty <<- penalty
-                          #matrices <- get('matrices', envir=globalenv())
-                          
-                          #print(typeof(length(scores)))
                           m <- length(.graphs)
-                          #print(m)
-                          #print(dim(matrices[[1]]))
                           n <- ncol(.graphs[[1]]$.score$pp.dat$data) * nrow(.graphs[[1]]$.score$pp.dat$data)
-                          #print("N")
-                          #print(n)
-                          #print(typeof(n))
-                          #print(n)
                           sum <- 0
                           k <- nrow(.graphs[[1]]$.score$pp.dat$data)
-                          #print("VARS")
-                          #print(list(penalty, m, n, sum, k))
-                          assign("isLocalIM", FALSE, envir=trueIM)
-                          
-                          
-                          
+                          trueIM$isLocalIM <- FALSE
+
                           for (i in 1:length(.graphs)) {
-                            #sum <- sum + scores[[i]]$global.score(scores[[i]]$create.dag()) + ((penalty * k) * log(n))
-                            # print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore))
-                            # sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.score$create.dag(), .imscore=.graphs[[i]]$.score$.imscore)
-                            
-                            #print(.graphs[[i]]$.score$global.score.int(.graphs[[i]]$.in.edges))
-                            #sum <- sum + .graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr)
                             sum <- sum + .graphs[[i]]$.score$global.score.int(.graphs[[i]]$.in.edges)
                           }
-                          
-                          #print(paste("n: ", n, " k: ", k, "length: ", length(.graphs), "sum: ", sum))
-                          
-                          #print("SUM")
-                          #print(sum)
-                          #print(sum)
-                          #imscore <- ((-2/m) *  sum) + ((penalty * k) * log(n))
                           imscore <- ((2/m) *  sum) + ((penalty * k) * log(n))
-                          
-                          # if (!(length(.graphs) == 1)) {
-                          #   assign("isLocalIM", TRUE, envir=trueIM) 
-                          # }
-                          
-                          #imscore <<- imscore
-                          #print(paste("imscore in function: ", imscore, "\n"))
-                          #print("IMSCORE:")
-                          #print(imscore)
                           return(imscore)
                         },
                         
-                        turn.step = function() {
-                          old.graph <- .graphs[[1]]$.in.edges
-                          
-                          best.graph <- old.graph
-                          trueIM$global.edges <- old.graph
-                          
-                          
-                          #edge destination
-                          for (i in 1:length(old.graph)) {
-                            #edge source
-                            for (j in 1:length(old.graph[[i]])) {
-                              #modify the graphs
-                              #old.graph <- trueIM$global.edges
-                              
-                              #it can't point to itself
-                              if (i == j) {
-                                next
-                              }
-                              
-                              #skip if no edges coming in
-                              if (length(old.graph[[i]]) == 0) {
-                                next
-                              }
-
-                              
-                              #print("BEFORE")
-                              #print(trueIM$global.edges)
-                              if (is.legal.edge(j, i) && edge.exists(j, i) && (edge.exists(i,j))) {
-                                print("removing because reverse edge exists")
-                                remove.global(i, j)
-                              }
-                              
-                              if (is.legal.edge(j, i) && edge.exists(j, i) && !(edge.exists(i,j))) {
-                                turn.global(j, i)
-                              }
-                              #print("AFTER")
-                              #print(trueIM$global.edges)
-                              for (k in 1:length(.graphs)) {
-                                .graphs[[k]]$.in.edges <- trueIM$global.edges
-                              }
-                              
-                              temp.score <- IMScore()
-                              
-                              if (temp.score > trueIM$score) {
-                                #for adding the original graph into the 
-                                #MEC if it doesn't have the highest score
-                                #print("updating BEST - turn")
-                                update.markovs(old.graph, trueIM$score)
-                                best.graph <- .graphs[[1]]$.in.edges
-                              }
-                              else {
-                                #print("updating MEC - turn")
-                                #print(paste("src: ", j, "dst: ", i))
-                                update.markovs(.graphs[[1]]$.in.edges, temp.score)
-                                #revert to keep scoring baseline consistent
-                                turn.global(i, j)
-                              }
-                              
-                              
-                              if (is.legal.edge(j, i) && edge.exists(j, i)) {
-                                #print("Removing edge")
-                                remove.global(j, i)
-                              }
-                              
-                              for (k in 1:length(.graphs)) {
-                                .graphs[[k]]$.in.edges <- trueIM$global.edges
-                              }
-                              
-                              temp.score <- IMScore()
-                              
-                              if (temp.score > trueIM$score) {
-                                #for adding the original graph into the 
-                                #MEC if it doesn't have the highest score
-                                #print("updating BEST - remove")
-                                update.markovs(old.graph, trueIM$score)
-                                best.graph <- .graphs[[1]]$.in.edges
-                              }
-                              else {
-                                print("updating MEC - remove")
-                                update.markovs(.graphs[[1]]$.in.edges, temp.score)
-                                #revert to keep scoring baseline consistent
-                                insert.global(j, i)
-                              }
-                            
-
-                            }
-                          }
-                          
-                          for (i in 1:length(.graphs)) {
-                            .graphs[[i]]$.in.edges <- best.graph
-                          }
-                          
-                        },
-                        
-                        #fixes edge lists so there are double-directed edges
-                        #
-                        #
+                        ## Purpose: fixes edge directions so there are no double directed edges.
+                        ##          
+                        ## TODO: improve this approach
+                        ## ----------------------------------------------------------------------
+                        ##' @param graph graph object to be modified
+                        ##' @return modified graph object
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         fix.edges = function(graph) {
                           new.graph <- rep(list(c()), length(graph))
                           for (i in 1:length(graph)) {
@@ -648,97 +513,55 @@ IMaGES <- setRefClass("IMaGES",
                           new.graph
                         },
                         
-                        
-                        #compares graphs and returns true if they're identical 
-                        #and false otherwise
+                        ## Purpose: compares two graphs and returns TRUE if the graphs are 
+                        ##          identical and FALSE otherwise
+                        ## ----------------------------------------------------------------------
+                        ##' @param graph1 first graph to be compared
+                        ##' @param graph2 second graph to be compared
+                        ##' @return TRUE if the graphs are identical and FALSE otherwise
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         is.identical = function(graph1, graph2) {
-                          for (i in 1:length(graph1)) {
-                            comp.bools <- graph1[[i]] == graph2[[i]]
-                            #print(comp.bools)
-                            
-                            if (!(length(graph1[[i]] == 0))) {
-                              if (length(graph2[[i]]) == 0) {
-                                #print("graph1 not null, graph2 null")
-                                #invisible(readline(prompt="Press [enter] to continue"))
-                                return(FALSE)
-                              }
-                            }
-                            if (!(length(graph2[[i]]) == 0)) {
-                              if (length(graph1[[i]] == 0)) {
-                                #print("graph1 null, graph2 not null")
-                                #invisible(readline(prompt="Press [enter] to continue"))
-                                return(FALSE)
-                              }
-                            }
-
-
-                            # if ((typeof(graph1[[i]]) != "logical" && typeof(graph2[[i]]) != "logical" && 
-                            #      graph1[[i]] != integer(0) && graph2[[i]] != integer(0) && 
-                            #      !is.null(graph1[[i]]) && !is.null(graph2[[i]]))) {
-                            if (length(graph1[[i]]) != 0 && length(graph2[[i]]) != 0) {
-                              #print("logical true")
-                              #print(graph1[[i]])
-                              #print(graph2[[i]])
-                              #invisible(readline(prompt="Press [enter] to continue"))
-                              #print(comp.bools)
-                              if (!all(comp.bools)) {
-                                #print("not equal")
-                                #invisible(readline(prompt="Press [enter] to continue"))
-                                return(FALSE)
-                                
-                              }
-                            }
-                            # if (!all(comp.bools)) {
-                            #   return(FALSE)
-                            # }
+                          graph1 <- as_adjacency_matrix(igraph.from.graphNEL(convert(graph1)), names=FALSE)
+                          graph2 <- as_adjacency_matrix(igraph.from.graphNEL(convert(graph2)), names=FALSE)
+                          
+                          truth.matrix <- graph1 == graph2
+                          
+                          if (length(truth.matrix[truth.matrix == FALSE]) > 0) {
+                            return(FALSE)
                           }
-                          #print("TRUE")
-                          #invisible(readline(prompt="Press [enter] to continue"))
                           return(TRUE)
                         },
                         
+                        ## Purpose: update the Markov Equivalence class throughout the IMaGES
+                        ##          process with the top n graphs, where n is the user-specified
+                        ##          max size of the MEC
+                        ## ----------------------------------------------------------------------
+                        ##' @param graph graph that might be added to the MEC
+                        ##' @param score IMScore of the graph
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         update.markovs = function(graph, score) {
                           #iterate backwards to find lowest score that it's higher than
                           sum <- 0
-                          
+                          graph1 <- list(.in.edges=graph$.in.edges, .nodes=graph$.nodes)
                           for (i in 1:length(trueIM$markovs)) {
-                            # if it is higher, bump lowest markov and sort in the new one
-                            #exclude graphs that are identical since that's not too helpful
-                            #if (score > trueIM$markovs[[i]]$.score) {
-                            #print("-------")
-                            #print(trueIM$markovs[[i]]$.score)
-                            #print(paste(i, ": ", typeof(trueIM$markovs[[i]])))
-                            #print("here")
-                            if (is.identical(graph$.in.edges, trueIM$markovs[[i]]$.graph)) {
-                              #print("made it here")
-                              #sum <- sum + 1
-                              return()
+                            if (!is.null(trueIM$markovs[[i]]$.graph)) {
+                              true <- list(.in.edges=trueIM$markovs[[i]]$.graph, .nodes=graph$.nodes)
+                              if (is.identical(graph1, true)) {
+                                return()
+                              }
                             }
-                            #if (sum == length(trueIM$markovs)) {
-                            #  return()
-                            #}
                           }
                           
-                          
                           for (i in 1:length(trueIM$markovs)) {
                             # if it is higher, bump lowest markov and sort in the new one
                             #exclude graphs that are identical since that's not too helpful
-                            #if (score > trueIM$markovs[[i]]$.score) {
-                            #print(trueIM$markovs)
-                            #print(paste("score: ", score))
-                            #print(paste("MScore: ", trueIM$markovs[[i]]$.score))
                             res <- (score > trueIM$markovs[[i]]$.score)
-                            #print(res)
                             if (score > trueIM$markovs[[i]]$.score && !is.null(score) && !is.null(trueIM$markovs[[i]]$.score)) {
-                              # for (k in length(trueIM$markovs) - 1:i + 1) {
-                              #   trueIM$markovs[[k + 1]] <- trueIM$markovs[[k]]
-                              # }
-                              #print("made it into edit")
                               converted <- convert(list(.in.edges = graph$.in.edges, .nodes = graph$.nodes))
                               markov <- list(.graph=graph$.in.edges, .score=score, .data=graph$.score$pp.dat$data)#,
                                                           #.params=apply.sem(converted, graph$.score$pp.dat$data))
-                              
-                              #print(trueIM$markovs[[i]], )
                               num.markovs <<- num.markovs
                               
                               for (k in num.markovs - 1:i + 1) {
@@ -746,82 +569,75 @@ IMaGES <- setRefClass("IMaGES",
                                   trueIM$markovs[[i]] <- markov
                                   break
                                 }
-                                #print(paste("i: ", i))
-                                #print(paste(k, k - 1))
                                 trueIM$markovs[[k]] <- trueIM$markovs[[k - 1]]
                               }
                               trueIM$markovs[[i]] <- markov
-                              #trueIM$markovs <-  append(trueIM$markovs, markov, i - 1)
-                              #print(trueIM$markovs)
-                              # for (k in num.markovs + 1:length(trueIM$markovs)) {
-                              #   trueIM$markovs[[i]] <- NULL
-                              # }
-                              
-                              #trueIM$markovs <- trueIM$markovs[1:trueIM$num.markovs]
-                              #trueIM$markovs <- trueIM$markovs[1:5]
-                              # markovs <- list()
-                              # for (j in 1:trueIM$num.markovs) {
-                              #   markovs[[i]] <- trueIM$markovs[[i]]
-                              # }
-                              # trueIM$markovs <- markovs
-                              # print(trueIM$markovs)
                               break
                             }
                           }
                           
                         },
                         
+                        
+                        ## Purpose: convert graph objects from edge lists to graphNEL objects
+                        ## ----------------------------------------------------------------------
+                        ##' @param graph graph object (containing .in.edges and .nodes)
+                        ##' @return graphNEL object
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         convert = function(from) {
-                          
                           edgeList <- lapply(from$.in.edges, function(v) from$.nodes[v])
                           names(edgeList) <- from$.nodes
-                          #print("edgeList")
-                          #print(edgeList)
                           result <- new("graphNEL",
                                         nodes = from$.nodes,
                                         edgeL = edgeList,
                                         edgemode = "directed")
                           return(reverseEdgeDirections(result))
-                          
-                          #edges<-IMtest$results$.in.edges
                         },
                         
-                        #does structural equation modeling on graphNEL
-                        #object (needs dataset)
+                        ## Purpose: apply structural equation modeling to a given graph
+                        ## ----------------------------------------------------------------------
+                        ##' @param converted graphNEL object to receive SEM modeling
+                        ##' @param dataset original data off of which the graph is based
+                        ##' @return SEM data
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         apply.sem = function(converted, dataset) {
-                          #print("made it here")
                           graph.nodes <- igraph.from.graphNEL(converted)
                           edge.list <- get.edgelist(graph.nodes)
-                          #print(edge.list)
-                          #print(edge.list)
                           model <- paste(edge.list[,1], "~", edge.list[,2])
-                          #print(model)
+
                           fit <- sem(model, data=data.frame(dataset))
                           estimate <- partable(fit)$est
                           estimate <- round(estimate,2)
-                          #print(edgeNames(converted))
-                          #print(estimate)
+
                           names(estimate) <- edgeNames(converted)
                           return(estimate)
                         },
                         
+                        ## Purpose: averages the SEM data from all of the individual graphs and
+                        ##          applies the results to the global graph
+                        ## ----------------------------------------------------------------------
+                        ##' @param params.list list of SEM data/parameters for all the graphs
+                        ##' @return averaged SEM data for global graph
+                        ## ----------------------------------------------------------------------
+                        ## Author: Noah Frazier-Logue
                         average.sem = function(params.list) {
-                          #print(length(params.list))
+                          #use first parameter as base structure to operate on
                           base <- params.list[[1]]
                           if (length(params.list) == 1) {
                             return(base)
                           }
+                          #add values to base
                           for (i in 2:length(params.list)) {
                             #print(length(params.list[[i]]))
                             for (j in 1:length(params.list[[i]])) {
                               base[j] <- base[j] + params.list[[i]][j]
                             }
                           }
-                          
+                          #divide base values by number of graphs
                           for (i in 1:length(params.list)) {
-                            #print(paste("base[", i,"] before: ", base[i]))
                             base[i] <- round((base[i] / length(params.list)),2)
-                            #print(paste("base[", i,"] after: ", base[i]))
                           }
                           return(base)
                         }
@@ -831,22 +647,16 @@ IMaGES <- setRefClass("IMaGES",
 
 IMaGES$methods(
   initialize = function(matrices = NULL, scores = NULL, penalty = 3, imscore = NULL, num.markovs=5) {
-    #images <-
-    #print("initializing")
-    #imscore = 0
     rawscores <- list()
-    
-    #print(paste("penalty: ", penalty))
-    
+    #handling raw matrices
     if (!is.null(matrices)) {
-      #print(paste("LENGTH: ", length(matrices)))
-      assign("numDatasets", length(matrices), envir=trueIM)
+      trueIM$numDatasets <- length(matrices)
+      #create score objects
       for (i in 1:length(matrices)) {
-        
-        #print("adding score")
         rawscores[[i]] <- new("GaussL0penObsScore", matrices[[i]], lambda = penalty)
       }  
     }
+    #handle score objects
     else {
       assign("numDatasets", length(scores), envir=trueIM)
       for (i in 1:length(scores)) {
@@ -855,10 +665,8 @@ IMaGES$methods(
       }
     }
     
-    #trueIM$num.markovs <- num.markovs
     penalty <<- penalty
     .rawscores <<- rawscores
-    
     graphs <- list()
     
     for (i in 1:length(.rawscores)) {
@@ -870,25 +678,23 @@ IMaGES$methods(
     
     initialize.global()
     
-    #imscore <<- IMScore()
-    #imscore <<- IMScore()
-    
     print("Running...")
     
     #create list of size num.markovs
     #initialize to lowest signed int value because you can't compare
     #ints and NULL
     trueIM$markovs <- rep(list(list(.graph=NULL, .score=-2147483648)), num.markovs)
-    #print(trueIM$markovs)
     
     for (i in 1:(ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data))) {
       #run IMaGES
       run()
     }
     
-    #####turn.step()
+    #de-double the edge directions
     .graphs[[1]]$.in.edges <- fix.edges(.graphs[[1]]$.in.edges)
     
+    
+    #apply double-edge fix to the rest of the graphs
     if (length(.graphs) > 1) {
       for (i in 2:length(.graphs)) {
         .graphs[[i]]$.in.edges <- .graphs[[1]]$.in.edges
@@ -896,61 +702,25 @@ IMaGES$methods(
     }
     
     
-    
-    
-    # for (i in 1:ncol(.graphs[[1]]$.score$pp.dat$data) * ncol(.graphs[[1]]$.score$pp.dat$data)) {
-    #   temp.scores <- vector()
-    # 
-    #   for (j in 1:length(.graphs)) {
-    # 
-    #     #run_phase(phase=str_opt, j)
-    #     run_phase(phase="GIES-T", j)
-    #     
-    #     
-    #     #TODO: run, get score, roll back for each
-    #     #then implement one with best score update for global graph
-    #     temp.scores[[j]] <- IMScore()
-    #     .graphs[[j]]$undo.step()
-    #   }
-    #   
-    #   #best.graph.index <- which(temp.scores == max(temp.scores))
-    #   find.best.step(temp.scores)
-    # }
-    
+    #apply SEM and structure the results 
     single.graphs <- list()
     params.list <- list()
     converted <- convert(list(.in.edges = graphs[[1]]$.in.edges, .nodes = .graphs[[1]]$.nodes))
-    #print(.graphs[[1]]$.in.edges)
-    #alt_converted <- convert(list(.in.edges = .graphs[[1]]$.in.edges, .nodes = .graphs[[1]]$.nodes))
     for (i in 1:length(.graphs)) {
-      #create .in.edges structure and convert it to graphNEL object
-      #converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
-      #print("Type of converted: ")
-      #print(converted)
-      
       params <- apply.sem(converted, .graphs[[i]]$.score$pp.dat$data)
       params.list[[i]] <- params
       single.converted <- convert(list(.in.edges = .graphs[[i]]$.in.edges, .nodes = .graphs[[i]]$.nodes))
       single.graphs[[i]] <-list(.graph = single.converted, .params = params)
     }
     
-    #print(single.graphs[[i]]$.params)
-    
     print("Done.")
+
     
-    #imscore <<- IMScore()
-    
-    #switched these for the time being
     global <- list(.graph = converted, .params = average.sem(params.list))
-    #alt <- list(.graph = converted, .params = average.sem(params.list))
-    
     markovs <- list()
-    
-    #print(trueIM$markovs)
-    
+
+    #only add markovs from list that aren't NULL
     for (i in 1:num.markovs) {
-      #print(trueIM$markovs)
-      
       attempt <- tryCatch(
         {
           converted.markov <- convert(list(.in.edges = fix.edges(trueIM$markovs[[i]]$.graph), .nodes = .graphs[[1]]$.nodes))
@@ -964,21 +734,7 @@ IMaGES$methods(
     }
     
     results <<- list(.global = global, .single.graphs = single.graphs, .markovs = markovs)
-    
-    #results$.in.edges <- trueIM$global.edges
-    #results$.nodes <- .graphs[[1]]$.nodes
     return(results)
-    
-    #imscore <<- IMScore()
-    #print("FINAL SCORES")
-    #for (i in 1:length(.graphs)) {
-      #print(.graphs[[i]]$.score$global.score(.graphs[[i]]$.current_repr))
-      #print(list(.graphs[[i]], .graphs[[i]]$repr()))
-      #results[[i]] <<- list(.graphs[[i]], .graphs[[i]]$repr())
-    #}
-    
-    #results <<- results
-    
   }
 )
 
@@ -1137,44 +893,22 @@ setRefClass("IMGraph",
                                    score$c.fcn,
                                    causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, phase=direction, ...),
                                    PACKAGE = "IMaGES")
-                #if (identical(new.graph, "interrupt"))
-                #  return(FALSE)
-                
-                # if (new.graph$steps > 0) {
-                #   .in.edges <<- new.graph$in.edges
-                #   names(.in.edges) <<- .nodes
-                # }
-                #print("BEFORE")
-                #print(.in.edges)
-                
                 
                 .old.edges <<- .in.edges
                 .in.edges <<- new.graph$in.edges
-                #.in.edges <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
                 .saved.edges <<- new.graph$in.edges
-                #test <<- .Call("representative", new.graph$in.edges, PACKAGE = "imagestest")
-                #print(test)
                 names(.in.edges) <<- .nodes
                 .edge.change <<- list(new.graph$edge.change$src, new.graph$edge.change$dst, new.graph$edge.change$alg)
-                #print("AFTER")
-                #print(.in.edges)
-                
-                #names(.in.edges) <<- .nodes
-                
-                #return(new.graph$steps == 1)
                 return(FALSE)
               },
               
+              #' undo individual step. used for calculating best step in IMaGES run
               undo.step = function() {
                 .in.edges <<- .old.edges
               },
               
+              #' redo individual step. used for calculating best step in IMaGES run
               redo.step = function() {
-                # print("SAME?: ")
-                # print(.in.edges)
-                # print("---------------")
-                # print(.saved.edges)
-                #invisible(readline(prompt="Press [enter] to continue"))
                 .in.edges <<- .saved.edges
               },
               
@@ -1200,13 +934,19 @@ setRefClass("IMGraph",
               }
             ))
 
-#finds lowest two values that, when multiplied, create square-ish grid for
-#plotting graphs
+
+## Purpose: finds lowest two values that, when multiplied, create square-ish grid for
+##          plotting graphs
+## ----------------------------------------------------------------------
+##' @param number number of graphs that need to be plotted
+##' @return vector containing the two (very similar) values that, when multiplied together,
+##'         result in a value that is >= to the input
+## ----------------------------------------------------------------------
+## Author: Noah Frazier-Logue
 find_dimensions = function(number) {
   val1 <- floor(sqrt(number))
   val2 <- ceiling(sqrt(number))
-  #res1 <- val1
-  #res2 <- val2
+  
   
   while (val1*val2 < number) {
     val2 <- val2 + 1
@@ -1214,15 +954,17 @@ find_dimensions = function(number) {
       val1 <- val1 - 1
     }
   }
-  
   return(c(val1, val2))
-  
 }
 
 
 
-
-#plot function for graphs generated by IMaGES
+## Purpose: plot function for graphs generated by IMaGES
+## ----------------------------------------------------------------------
+##' @param graph.list graph object (containing .graph and .params) to plot
+##' @param title plot title. defaults to "Global"
+## ----------------------------------------------------------------------
+## Author: Noah Frazier-Logue
 plotIMGraph = function(graph.list, title="Global") {
   graph <- graph.list$.graph
   params <- graph.list$.params
@@ -1230,7 +972,12 @@ plotIMGraph = function(graph.list, title="Global") {
   plot(finalgraph, main=title)
 }
 
-#plots all 
+## Purpose: plot global and individual graphs in a grid using the object
+##          returned by IMaGES. 
+## ----------------------------------------------------------------------
+##' @param im.fits object returned by IMaGES
+## ----------------------------------------------------------------------
+## Author: Noah Frazier-Logue
 plotAll = function(im.fits) {
   single.length <- length(im.fits$results$.single.graphs)
   plot.vals <- find_dimensions(single.length + 1)
@@ -1240,10 +987,14 @@ plotAll = function(im.fits) {
   for (i in 1:single.length) {
     plotIMGraph(im.fits$results$.single.graphs[[i]], title=paste("Graph ", i))
   }
-  
 }
 
-#plots all 
+## Purpose: plot global and Markov Equivalence Class graphs in a grid using the object
+##          returned by IMaGES. 
+## ----------------------------------------------------------------------
+##' @param im.fits object returned by IMaGES
+## ----------------------------------------------------------------------
+## Author: Noah Frazier-Logue
 plotMarkovs = function(im.fits) {
   single.length <- length(im.fits$results$.markovs)
   print(single.length)
@@ -1260,10 +1011,7 @@ plotMarkovs = function(im.fits) {
 ### GLOBAL VAR
 
 #trueIM <- 100
-options(warn = 0)
 trueIM <- new.env()
-assign("num.markovs", 5, env=trueIM)
-assign("best", list(), env=trueIM)
 assign("score", 100, env=trueIM)
 assign("isLocalIM", FALSE, env=trueIM)
 assign("numDatasets", 1, env=trueIM)

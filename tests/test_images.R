@@ -676,11 +676,18 @@ test_driver <- function() {
 #it might be due to the fact that the labels aren't included?
 autism_driver <- function() {
   #get file locations
+  
+  library(graph)
+  library(igraph)
+  library(sfsmisc)
+  library(lavaan)
+  library(Rgraphviz)
+  
   sapply(list.files(pattern="[.]R$", path="R/", full.names=TRUE), source);
   
   #get filenames 
   #filenames <- list.files("test/14-19", pattern="SB*", full.names=TRUE)
-  filenames <- list.files("test/steve", pattern="autism*", full.names=TRUE)
+  filenames <- list.files("test/", pattern="VA*", full.names=TRUE)
   
   matrices = list()
   

@@ -364,6 +364,17 @@ void ScoreGaussL0PenRaw::setData(Rcpp::List& data)
 	// Cast raw data matrix
 	Rcpp::NumericMatrix dataMat((SEXP)(data["data"]));
 	_dataMat = arma::mat(dataMat.begin(), dataMat.nrow(), dataMat.ncol(), false);
+	
+	//_dataMult = _dataMat;
+	std::cout << "TEST\n";
+	for (int i = 0; i < _dataMat.n_rows; i++) {
+	  for (int j = 0; j < _dataMat.n_cols; j++) {
+	    //make it nonlinear!
+	    std::cout << "Before: " << _dataMat(i,j) << "\n";
+	    _dataMat(i,j) = log(_dataMat(i,j)/(1 + _dataMat(i,j)));
+	    std::cout << "After: " << _dataMat(i,j) << "\n";
+	  }
+	}
 
 	// Cast vectors of non-interventions, adjust R indexing convention to C++
 	_nonInt = Rcpp::as<std::vector<arma::uvec> >(data["non.int"]);
@@ -396,7 +407,7 @@ double ScoreGaussL0PenRaw::local(const uint vertex, const std::set<uint>& parent
   // std::cout << "C++ raw local score: " << res << "\n";
   // return res;
 	dout.level(3) << "Calculating local score...\n";
-
+  std::cout << "Calculating local score\n";
 	// Cast parents set to Armadillo uvec
 	arma::uvec parVec(_allowIntercept ? parents.size() + 1 : parents.size());
 	std::copy(parents.begin(), parents.end(), parVec.begin());
